@@ -327,8 +327,6 @@ def test_authorization():
 
     #Try to check stats for short url created by user A when user A logged in
 
-    print(code)
-
     check_stats=client.get(f"/stats/{code}")
 
     assert check_stats.status_code==200

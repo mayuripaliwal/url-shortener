@@ -39,7 +39,6 @@ function App() {
       else alert(result.detail[0].msg);
     }
     catch (error) {
-      console.log(error)
       alert("Unable to connect to the server. Please try again.");
     }
     setLoading(false);
@@ -55,6 +54,8 @@ function App() {
         <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"}  to="/">Home</NavLink> 
         {" | "}
         <NavLink  className={({isActive})=>isActive ? "active-link":"nav-link"} to="/analytics">Analytics</NavLink>
+        {" | "}
+        <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
       </nav>
       <br></br>
       <h1>URL Shortener</h1>

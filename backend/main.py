@@ -223,6 +223,21 @@ def loginUser(user:UserLogin, response: Response):
         "message":"Login Successful"
     }
 
+#this api deletes the cookie to log out the user
+@app.post("/logout")
+def logoutUser(response:Response):
+
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        secure=IS_PRODUCTION,
+        samesite="none" if IS_PRODUCTION else "lax"
+    )
+
+    return {
+        "message":"Logout successful"
+    }
+
 #this api redirects to the long url using the short url code
 @app.get("/{short_code}")
 def redirectUrl(short_code:str):

@@ -77,6 +77,8 @@ function Analytics(){
                 <NavLink className={({isActive})=> isActive ? "active-link":"nav-link"}to="/">Home</NavLink>
                 {" | "}
                 <NavLink className={({isActive})=> isActive ? "active-link":"nav-link"}  to="/analytics">Analytics</NavLink>
+                {" | "}
+                <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
             </nav>
             <br></br>
             <h1>Analytics</h1>

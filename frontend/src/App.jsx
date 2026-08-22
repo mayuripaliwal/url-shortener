@@ -3,6 +3,7 @@ import Home from "./Home"
 import Analytics from "./Analytics"
 import Register from "./Register"
 import Login from "./Login"
+import Logout from "./Logout"
 
 function App(){
   return (
@@ -11,6 +12,7 @@ function App(){
       <Route path="/analytics" element={<Analytics/>}/>
       <Route path="/signup" element={<Register/>}/>
       <Route path="/login" element={<Login/>}/>
+      <Route path="/logout" element={<Logout/>}/>
     </Routes>
   )
 }
