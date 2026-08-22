@@ -351,3 +351,7 @@ def test_authorization():
 
     assert check_stats.status_code==404
 
+def test_logout():
+    response=client.post("/logout")
+
+    assert response.status_code==200
