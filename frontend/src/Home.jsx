@@ -58,20 +58,21 @@ function App() {
         <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
       </nav>
       <br></br>
-      <h1>URL Shortener</h1>
+      <h1>From ridiculously long URLs to beautifully simple links, in seconds.</h1>
+      <br></br>
+      <div className="url-form">
     <input
     className="input"
     type="text"
-    placeholder="Enter URL"
+    placeholder="Enter the link here"
     value={url}
     onChange={(e)=>setUrl(e.target.value)}
     />
-    <br></br>
-    <br></br>
 
     <button 
     className="click-button"
     onClick={handleShortenUrl}>Shorten URL</button>
+    </div>
     {loading && (
       <p>Generating short URL...</p>
     )}

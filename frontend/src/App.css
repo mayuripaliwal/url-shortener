@@ -191,7 +191,9 @@
   padding:10px;
   border-radius:8px;
   border:none;
-  font-family:sans-serif
+  font-family:sans-serif;
+  background-color:white;
+  color:black
 }
 
 .click-button{
@@ -200,9 +202,12 @@
   padding:10px;
   font-size:20px;
   border-radius:8px;
-  background-color:steelblue;
+  background: linear-gradient(to right, #c026d3, #c94f70);
   border:none;
   cursor:pointer
+}
+.click-button:hover {
+  background: linear-gradient(to right, #a21caf, #b83f62);
 }
 
 .shorten-button:hover{
@@ -233,7 +238,9 @@
 }
 
 h1{
-  font-family:sans-serif
+  font-family:sans-serif;
+  line-height:1.15;
+  font-size:56px
 }
 
 .display-info{
@@ -250,3 +257,17 @@ h1{
 .display-info a:hover{
   text-decoration:underline
 }
+
+.url-form{
+  display:flex;
+  width:fit-content;
+  margin: 0 auto;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  padding:10px;
+  background-color:pink;
+  border-radius:8px
+
+}
+
