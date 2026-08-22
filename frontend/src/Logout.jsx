@@ -1,9 +1,14 @@
 import {useEffect} from "react";
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 
 function Logout(){
     const [isLoggedOut,setIsLoggedOut]=useState(false)
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
+    const navigate=useNavigate()
+    async function handleLogin(){
+        navigate("/login");
+    }
     async function handleLogout(){
         try{
             const response=await fetch(`${BACKEND_URL}/logout`,{
@@ -35,7 +40,14 @@ function Logout(){
             <h1>Logout</h1>
 
             {isLoggedOut && (
-                <p>Logged out successfuly.</p>
+                <div>
+                <p style={{fontSize:"1.2rem"}}>You are now logged out.</p>
+                <br></br>
+
+                <button 
+                className="click-button"
+                onClick={handleLogin}>Log Back In</button>
+                </div>
             )}
         </div>
     )
