@@ -271,3 +271,39 @@ h1{
 
 }
 
+.features-section{
+  padding:80px
+}
+
+.features-section h2{
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 60px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px 20px;
+}
+
+.feature-card {
+  position: relative;
+  background: linear-gradient(to bottom, hwb(294 69% 13%), #ed9bbc);
+  border-radius: 18px;
+
+  padding: 45px 20px 25px;
+  min-height: 150px;
+
+  text-align: center;
+}
+.feature-card h3 {
+  margin-bottom: 12px;
+  color:rgb(66, 65, 65)
+}
+
+.feature-card p {
+  color: #555555;
+  line-height: 1.5;
+  font-size: 14px;
+}

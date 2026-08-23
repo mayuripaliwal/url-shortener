@@ -12,7 +12,28 @@ function App() {
   const [showLoginButton,setShowLoginButton]=useState(false)
 
   const navigate=useNavigate();
-
+  const features = [
+  {
+    title: "Fast & Reliable",
+    description: "Generate short URLs quickly with a simple and reliable experience."
+  },
+  {
+    title: "Secure Authentication",
+    description: "Your links are protected with authenticated access and secure sessions."
+  },
+  {
+    title: "Link Analytics",
+    description: "Track clicks and understand how your shortened links perform."
+  },
+  {
+    title: "Easy Link Management",
+    description: "Create and manage your shortened URLs from one place."
+  },
+  {
+    title: "Simple Interface",
+    description: "A clean interface that makes shortening URLs quick and effortless."
+  }
+];
   async function  handleShortenUrl(){
     setLoading(true);
     setShortUrl("");
@@ -93,7 +114,22 @@ function App() {
         className="click-button"
         onClick={handleLogin}>Login</button>
     )}
+    
+    <section className="features-section">
+      <h2>Features</h2>
 
+      <div className="features-grid">
+        {features.map(function(feature,index){
+          return (
+            <div className="feature-card" key={index}>
+              <h3>{feature.title}</h3>
+
+              <p>{feature.description}</p>
+            </div>
+          )
+        })}
+      </div>
+    </section>
 
     </div>
 
