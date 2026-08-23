@@ -16,6 +16,8 @@ function Analytics(){
 
     const navigate=useNavigate();
 
+    const [errorMessage,setErrorMessage]=useState("");
+
     async function handleGetStats(){
         setLoading(true);
         setClickCount("");
@@ -28,7 +30,7 @@ function Analytics(){
             //then, extract the code from the url
             
             if (!shortUrl.startsWith(URL_PREFIX)){
-                alert("Please enter a valid short URL.");
+                setErrorMessage("Please enter a valid short URL.");
                 setLoading(false);
                 return;
             }
@@ -52,11 +54,11 @@ function Analytics(){
                 setLongUrl(result.long_url);
             }
             else if (response.status===401){
+                setErrorMessage("Please log in to continue.")
                 setShowLoginButton(true);
-                alert(result.detail);
             }
             else{
-                alert(result.detail);
+                setErrorMessage("Something went wrong. Please try again.")
             }
             
         }
@@ -82,10 +84,12 @@ function Analytics(){
             </nav>
             <br></br>
             <h1>Analytics</h1>
+
+            <div className="url-form">
             <input
             className="input"
             type="text" 
-            placeholder="Enter short url" 
+            placeholder="Enter short URL" 
             value={shortUrl}
             onChange={(e)=>{
                 setShortUrl(e.target.value);
@@ -95,11 +99,15 @@ function Analytics(){
                 setLongUrl("");
             }
             }/>
-            <br></br>
-            <br></br>
             
             <button className="click-button"
              onClick={handleGetStats}>Get Analytics</button>
+             </div>
+
+            <br></br>
+             {errorMessage && (
+                <p className="error-message">{errorMessage}</p>
+            )}
 
             {loading &&<p>Loading stats...</p>}
             
@@ -115,7 +123,6 @@ function Analytics(){
             target="_blank"
             rel="noopener noreferrer">{longUrl}</a></p>}
 
-            <br></br>
             <br></br>
 
             {showLoginButton && (

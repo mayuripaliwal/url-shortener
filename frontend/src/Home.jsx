@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {NavLink} from "react-router-dom";
 import './App.css'
 import {useNavigate} from "react-router-dom";
+import {TypeAnimation} from "react-type-animation";
 
 function App() {
   const [url,setUrl]=useState("")
@@ -34,9 +35,12 @@ function App() {
     description: "A clean interface that makes shortening URLs quick and effortless."
   }
 ];
+
+  const [errorMessage,setErrorMessage]=useState("");
   async function  handleShortenUrl(){
     setLoading(true);
     setShortUrl("");
+    setErrorMessage("");
     //handle network errors
     try {
       const response=await fetch(`${BACKEND_URL}/shorten`,{
@@ -51,16 +55,26 @@ function App() {
       const result=await response.json();
       if (response.ok) setShortUrl(result.short_url);
       
-      else if (typeof result.detail=="string"){
+      else if (response.status===401){
         //handle error when user not logged in
         
-        alert(result.detail);
+        setErrorMessage("Please log in to continue.");
         setShowLoginButton(true);
       }
-      else alert(result.detail[0].msg);
+      else if (response.status===429) {
+        setErrorMessage("Too many requests. Please try again shortly.");
+        
+      }
+      else if (response.status===422) {
+        setErrorMessage("Please enter a valid URL.");
+        
+      }
+      else{
+        setErrorMessage("Something went wrong. Please try again.");
+      }
     }
     catch (error) {
-      alert("Unable to connect to the server. Please try again.");
+      setErrorMessage("Unable to connect to the server. Please try again.");
     }
     setLoading(false);
     
@@ -79,7 +93,22 @@ function App() {
         <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
       </nav>
       <br></br>
-      <h1>From ridiculously long URLs to beautifully simple links, in seconds.</h1>
+      <h1>
+        <TypeAnimation
+          sequence={[
+            "Turn your long URLs into beautifully simple links.",
+            1000,
+            "Turn your long URLs into effortlessly shareable links.",
+            1000,
+            "Turn your long URLs into easily trackable links.",
+            1000
+            ]}
+            wrapper="span"
+            speed={50}
+            style={{fontSize:'0.9em',display:"inline-block"}}
+        />
+        
+        </h1>
       <br></br>
       <div className="url-form">
     <input
@@ -107,13 +136,20 @@ function App() {
       )
     }
     <br></br>
+
+    {errorMessage && (
+      <p className="error-message">{errorMessage}</p>
+    )}
     <br></br>
+    
 
     {showLoginButton && (
         <button
         className="click-button"
         onClick={handleLogin}>Login</button>
     )}
+
+    
     
     <section className="features-section">
       <h2>Features</h2>
