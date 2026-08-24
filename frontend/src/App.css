@@ -349,3 +349,21 @@ h1{
   background-color:pink;
   font-size:20px;
 }
+
+.analytics-details h2{
+  color:black;
+  font-size:20px;
+}
+
+.analytics-details a{
+  color:black;
+  font-size:20px;
+}
+
+
+.analytics-card{
+  text-align:left;
+  width:fit-content;
+  justify-content:left;
+  margin: 0;
+}

@@ -75,6 +75,19 @@ function Analytics(){
         navigate("/login");
     }
 
+    function formatDateTime(timestamp){
+        const options={
+            day:"numeric",
+            month:"short",
+            year:"numeric",
+            hour:"numeric",
+            minute:"2-digit",
+            hour12:true
+        }
+        const date=new Date(timestamp);
+        return new Intl.DateTimeFormat(undefined,options).format(date);
+    }
+
     return (
         <div>
 
@@ -115,13 +128,19 @@ function Analytics(){
             {loading &&<p>Loading stats...</p>}
             
             {clickCount!==""&&(
-                <section className="analytics-details">
-
-            <p className="analytics-click-count">Total clicks: {clickCount}</p>
+                <div>
+                
+            <section className="analytics-details">
+            
+            <strong><p className="analytics-click-count">Total clicks: {clickCount}</p></strong>
+            
+            </section>
+                
             <br></br>
 
+            <section className="analytics-details">
             <h2>Link Details</h2>
-            
+            <div className="analytics-card">
              <p>Short URL: <a 
             href={shortUrl} 
             target="_blank"
@@ -130,16 +149,18 @@ function Analytics(){
             
             
 
-            <p>Created At: {createdAt}</p>
+            <p>Created: {formatDateTime(createdAt)}</p>
 
-            {lastClickedAt&& <p>Last Clicked At: {lastClickedAt}</p>}
+            {lastClickedAt&& <p>Last Clicked: {formatDateTime(lastClickedAt)}</p>}
             
             <p>Original URL: <a 
             href={longUrl}
             target="_blank"
             rel="noopener noreferrer">{longUrl}</a></p>
-
+            </div>
             </section>
+            </div>
+            
             )}
             
 

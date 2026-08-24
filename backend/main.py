@@ -337,8 +337,8 @@ def updateStats(code:str):
 
 def getStats(code:str,user_id:int):
     cursor.execute("SELECT click_count, "\
-    "to_char(created_at, 'dd Mon YYYY HH24:MI:SS OF') as created_at, " \
-    "to_char(last_clicked_at,'dd Mon YYYY HH24:MI:SS OF') as last_clicked_at, " \
+    "created_at, " \
+    "last_clicked_at, " \
     "long_url    " \
     "FROM urls " \
     "WHERE code=%s " \
