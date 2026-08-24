@@ -59,3 +59,52 @@ flowchart LR
 - Store URL mappings in PostgreSQL
 - Redirect using FastAPI `RedirectResponse`
 - View URL analytics
+
+## API Endpoints
+
+| Method | Endpoint | Authentication | Description |
+|---|---|---|---|
+| `POST` | `/register` | No | Register a new user |
+| `POST` | `/login` | No | Authenticate a user |
+| `POST` | `/shorten` | Yes | Create a shortened URL |
+| `GET` | `/{code}` | No | Redirect to the original URL |
+| `GET` | `/stats/{code}` | Yes | Retrieve analytics for a shortened URL |
+
+## Database Schema
+
+The application uses PostgreSQL with 2 tables:
+
+> Each user can own multiple shortened URLs, while each shortened URL belongs to a single user
+
+```mermaid
+flowchart LR
+    User[User]
+    UrlA[Short URL A]
+    UrlB[Short URL B]
+
+    User --> | creates | UrlA
+    User --> | creates | UrlB
+```
+
+### `Users`
+
+| Column | Type | Constraints|Description |
+|---|---|---|---|
+| `user_id` |INTEGER|PRIMARY KEY| Unique identifier for the user, PRIMARY KEY |
+| `email` |TEXT|UNIQUE| User's email address|
+| `user_name` |TEXT|| User's username |
+| `password_hash` |TEXT|| Bcrypt hash of the user's password |
+
+### `Urls`
+
+| Column |Type|Constraints| Description |
+|---|---|---|---|
+| `url_id` |INTEGER|PRIMARY KEY| Unique identifier for the shortened URL |
+| `code` |TEXT|UNIQUE| Base62-encoded short URL code |
+| `long_url`|TEXT| | Original URL |
+| `click_count` |INTEGER| | Number of times the shortened URL was clicked |
+| `created_at`|TIMESTAMPTZ| | Timestamp when the shortened URL was created |
+| `last_clicked_at`|TIMESTAMPTZ| | Timestamp of the most recent click |
+| `user_id` |INTEGER|FOREIGN KEY| ID of the user who owns the URL |
+
+> `urls.user_id` is a foreign key referencing `users.user_id`.
