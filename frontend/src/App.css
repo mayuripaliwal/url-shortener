@@ -197,7 +197,7 @@
 }
 
 .click-button{
-  width:200px;
+  width:fit-content;
   height:40px;
   padding:10px;
   font-size:20px;
@@ -208,10 +208,6 @@
 }
 .click-button:hover {
   background: linear-gradient(to right, #a21caf, #b83f62);
-}
-
-.shorten-button:hover{
-  background-color:royalblue
 }
 
 .navbar{
@@ -310,4 +306,24 @@ h1{
 
 .error-message {
   color: #d7bebe;
+}
+
+.shortened-url-display{
+  display:flex;
+  width:fit-content;
+  margin: 0 auto;
+  gap:15px;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+  background-color:pink;
+  border-radius:8px;
+  font-family:sans-serif;
+  color:#555555
+}
+
+.shortened-url-display a{
+  text-decoration:none;
+  color:black;
+  font-family:sans-serif
 }

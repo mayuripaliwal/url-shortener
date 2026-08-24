@@ -37,10 +37,13 @@ function App() {
 ];
 
   const [errorMessage,setErrorMessage]=useState("");
+
+  const [copied, setCopied]=useState(false);
   async function  handleShortenUrl(){
     setLoading(true);
     setShortUrl("");
     setErrorMessage("");
+    setCopied(false);
     //handle network errors
     try {
       const response=await fetch(`${BACKEND_URL}/shorten`,{
@@ -83,6 +86,12 @@ function App() {
   function handleLogin(){
     navigate("/login");
   }
+
+  //this function copies the short url to clipboard
+  async function handleCopy(){
+    await navigator.clipboard.writeText(shortUrl);
+    setCopied(true);
+  }
   return (
     <div>
       <nav className="navbar">
@@ -122,17 +131,26 @@ function App() {
     <button 
     className="click-button"
     onClick={handleShortenUrl}>Shorten URL</button>
+
     </div>
     {loading && (
       <p>Generating short URL...</p>
     )}
+
+    <br></br>
+
     {shortUrl && !loading && (
-      <p className="display-info">Shortened URL : <a 
+      <div className="shortened-url-display">
+      <p>Shortened URL : <a 
       href={shortUrl}
       target="_blank"
       rel="noopener noreferrer"> {shortUrl}
       </a>
       </p>
+      <button 
+      className="click-button"
+      onClick={handleCopy}>{copied?"Copied":"Copy"}</button>
+      </div>
       )
     }
     <br></br>
