@@ -10,15 +10,15 @@ A full-stack URL Shortener built using React, FastAPI, and PostgreSQL
 ## Demo
 
 ### 1. Authentication
-![Sign up page](screenshots/register.png)
+![Sign up page](screenshots/user-register.png)
 
-![Login page](screenshots/login.png)
+![Login page](screenshots/user-login.png)
 
 ### 2. Create a short URL
-![Home page](screenshots/home.png)
+![Home page](screenshots/shorten-url.png)
 
 ### 3. View analytics
-![Analytics page](screenshots/analytics.png)
+![Analytics page](screenshots/url-analytics.png)
 
 ## Tech Stack
 
