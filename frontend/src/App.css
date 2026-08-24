@@ -229,7 +229,7 @@
 }
 
 .active-link{
-  background-color:steelblue;
+  background-color:#374385;
   color:white
 }
 
@@ -319,6 +319,7 @@ h1{
   background-color:pink;
   border-radius:8px;
   font-family:sans-serif;
+  font-size:20px;
   color:#555555
 }
 
@@ -326,4 +327,25 @@ h1{
   text-decoration:none;
   color:black;
   font-family:sans-serif
+}
+
+.analytics-click-count{
+  color:black;
+  width:fit-content;
+  justify-content:center;
+  align-items:center;
+  margin: 0 auto;
+  padding:10px;
+  background-color:pink
+}
+
+.analytics-details{
+  color:black;
+  width:fit-content;
+  justify-content:center;
+  align-items:center;
+  margin: 0 auto;
+  padding:10px;
+  background-color:pink;
+  font-size:20px;
 }

@@ -57,6 +57,9 @@ function Analytics(){
                 setErrorMessage("Please log in to continue.")
                 setShowLoginButton(true);
             }
+            else if (response.status===404){
+                setErrorMessage("Short URL not found.");
+            }
             else{
                 setErrorMessage("Something went wrong. Please try again.")
             }
@@ -77,13 +80,13 @@ function Analytics(){
 
             <nav className="navbar">
                 <NavLink className={({isActive})=> isActive ? "active-link":"nav-link"}to="/">Home</NavLink>
-                {" | "}
+                
                 <NavLink className={({isActive})=> isActive ? "active-link":"nav-link"}  to="/analytics">Analytics</NavLink>
-                {" | "}
+                
                 <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
             </nav>
             <br></br>
-            <h1>Analytics</h1>
+            <h1>Paste your link. See the insights.</h1>
 
             <div className="url-form">
             <input
@@ -111,17 +114,34 @@ function Analytics(){
 
             {loading &&<p>Loading stats...</p>}
             
-            {clickCount!=="" && <p className="display-info">Short URL: <a 
+            {clickCount!==""&&(
+                <section className="analytics-details">
+
+            <p className="analytics-click-count">Total clicks: {clickCount}</p>
+            <br></br>
+
+            <h2>Link Details</h2>
+            
+             <p>Short URL: <a 
             href={shortUrl} 
             target="_blank"
-            rel="noopener noreferrer">{shortUrl}</a></p>}
-            {clickCount!=="" && <p className="display-info">Click Count: {clickCount}</p>}
-            {clickCount!=="" && <p className="display-info">Created At: {createdAt}</p>}
-            {lastClickedAt&& <p className="display-info">Last Clicked At: {lastClickedAt}</p>}
-            {longUrl && <p className="display-info">Original URL: <a 
+            rel="noopener noreferrer">{shortUrl}</a></p>
+
+            
+            
+
+            <p>Created At: {createdAt}</p>
+
+            {lastClickedAt&& <p>Last Clicked At: {lastClickedAt}</p>}
+            
+            <p>Original URL: <a 
             href={longUrl}
             target="_blank"
-            rel="noopener noreferrer">{longUrl}</a></p>}
+            rel="noopener noreferrer">{longUrl}</a></p>
+
+            </section>
+            )}
+            
 
             <br></br>
 

@@ -91,14 +91,17 @@ function App() {
   async function handleCopy(){
     await navigator.clipboard.writeText(shortUrl);
     setCopied(true);
+    setTimeout(function(){
+      setCopied(false);
+    },2000);
   }
   return (
     <div>
       <nav className="navbar">
         <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"}  to="/">Home</NavLink> 
-        {" | "}
+        
         <NavLink  className={({isActive})=>isActive ? "active-link":"nav-link"} to="/analytics">Analytics</NavLink>
-        {" | "}
+        
         <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
       </nav>
       <br></br>
