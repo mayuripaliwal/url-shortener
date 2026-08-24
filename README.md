@@ -20,6 +20,21 @@ A full-stack URL Shortener built using React, FastAPI, and PostgreSQL
 ### 3. View analytics
 ![Analytics page](screenshots/url-analytics.png)
 
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+    User[User Browser]
+    React[React Frontend]
+    FastAPI[FastAPI Backend]
+    PostgreSQL[(PostgreSQL Database)]
+
+    User --> React
+    React -->|API requests| FastAPI
+    FastAPI --> PostgreSQL
+    FastAPI -->|Short URL redirect| External[Original Website]
+```
+
 ## Tech Stack
 
 **Frontend:** React, React Router, JavaScript, CSS
