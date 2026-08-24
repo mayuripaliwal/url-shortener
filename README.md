@@ -3,20 +3,21 @@
 A full-stack URL Shortener built using React, FastAPI, and PostgreSQL
 
 ## Link
-[URL Shortener](https://url-shortener-mayuri9.vercel.app/login)
+[Try the URL Shortener](https://url-shortener-mayuri9.vercel.app/login)
+> Note: The backend is hosted on Render and may take upto a minute
+> to wake up after a period of inactivity.
 
-## Screenshots
+## Demo
 
-## Register
+### 1. Authentication
 ![Sign up page](screenshots/register.png)
 
-## Login
 ![Login page](screenshots/login.png)
 
-### Home
+### 2. Create a short URL
 ![Home page](screenshots/home.png)
 
-### Analytics
+### 3. View analytics
 ![Analytics page](screenshots/analytics.png)
 
 ## Tech Stack

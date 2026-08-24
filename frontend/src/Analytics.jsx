@@ -75,6 +75,7 @@ function Analytics(){
         navigate("/login");
     }
 
+    //this function converts the timestamp into a user -friendly format
     function formatDateTime(timestamp){
         const options={
             day:"numeric",
