@@ -67,8 +67,8 @@ function App(){
   else if (authStatus===AUTH_STATUS.LOGGED_IN) {
     return (
       <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/analytics" element={<Analytics/>}/>
+        <Route path="/" element={<Home setAuthStatus={setAuthStatus}/>} />
+        <Route path="/analytics" element={<Analytics setAuthStatus={setAuthStatus}/>}/>
         <Route path="/logout" element={<Logout setAuthStatus={setAuthStatus}/>}/>
 
         {/*redirect*/}

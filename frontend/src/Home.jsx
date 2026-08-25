@@ -3,8 +3,9 @@ import {NavLink} from "react-router-dom";
 import './App.css'
 import {useNavigate} from "react-router-dom";
 import {TypeAnimation} from "react-type-animation";
+import AUTH_STATUS from './authStatus';
 
-function App() {
+function App({setAuthStatus}) {
   const [url,setUrl]=useState("")
   const [shortUrl,setShortUrl]=useState("")
   const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
@@ -60,7 +61,8 @@ function App() {
       
       else if (response.status===401){
         //handle error when user not logged in
-        
+        //also, update auth status
+        setAuthStatus(AUTH_STATUS.LOGGED_OUT);
         setErrorMessage("Please log in to continue.");
         setShowLoginButton(true);
       }

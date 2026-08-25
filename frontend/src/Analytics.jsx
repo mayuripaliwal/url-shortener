@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import {useNavigate} from "react-router-dom";
+import AUTH_STATUS from './authStatus';
 
-function Analytics(){
+function Analytics({setAuthStatus}){
     const [clickCount,setClickCount]=useState("");
     const [longUrl,setLongUrl]=useState("");
     const [shortUrl,setShortUrl]=useState("");
@@ -54,6 +55,7 @@ function Analytics(){
                 setLongUrl(result.long_url);
             }
             else if (response.status===401){
+                setAuthStatus(AUTH_STATUS.LOGGED_OUT);
                 setErrorMessage("Please log in to continue.")
                 setShowLoginButton(true);
             }
