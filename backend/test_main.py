@@ -355,3 +355,31 @@ def test_logout():
     response=client.post("/logout")
 
     assert response.status_code==200
+
+def test_auth():
+    register_user=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"string"
+    })
+    
+    assert register_user.status_code==200
+
+    login_user=client.post("/login",json={
+        "email":"user@example.com",
+        "password":"string"
+    })
+
+    assert login_user.status_code==200
+
+    response=client.get("/auth")
+
+    assert response.status_code==200
+
+    response=client.post("/logout")
+    
+    assert response.status_code==200
+
+    response=client.get("/auth")
+    
+    assert response.status_code==401
