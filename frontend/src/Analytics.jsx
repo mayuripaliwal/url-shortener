@@ -66,7 +66,7 @@ function Analytics(){
             
         }
         catch (e){
-            alert("Unable to connect to the server. Please try again.");
+            setErrorMessage("Unable to connect to the server. Please try again.");
         }
         setLoading(false);
     }

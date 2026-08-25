@@ -6,7 +6,9 @@ function Logout(){
     const [isLoggedOut,setIsLoggedOut]=useState(false)
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
     const navigate=useNavigate()
-    const [loading,setLoading]=useState(false)
+    const [loading,setLoading]=useState(false);
+
+    const [errorMessage, setErrorMessage]= useState("");
 
     async function handleLogin(){
         navigate("/login");
@@ -22,7 +24,7 @@ function Logout(){
 
             if (response.status!==200){
                 
-                alert(result.detail);
+                setErrorMessage("Something went wrong. Please try again.");
                 setLoading(false);
                 return;
             }
@@ -32,7 +34,7 @@ function Logout(){
             }
         }
         catch(error) {
-            alert("Unable to connect to server. Please try again.")
+            setErrorMessage("Unable to connect to server. Please try again.")
         }
         setLoading(false);
     }
@@ -43,6 +45,12 @@ function Logout(){
     return (
         <div>
             <h1>Logout</h1>
+
+            <br></br>
+            {errorMessage && (
+                <p className="error-message">{errorMessage}</p>
+            )}
+            <br></br>
 
             {loading && (
                 <p>Just a moment...</p>
