@@ -383,3 +383,33 @@ def test_auth():
     response=client.get("/auth")
     
     assert response.status_code==401
+
+def test_get_all_stats():
+    register_user=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"string"
+    })
+    
+    assert register_user.status_code==200
+
+    login_user=client.post("/login",json={
+        "email":"user@example.com",
+        "password":"string"
+    })
+
+    assert login_user.status_code==200
+
+    stats_user=client.get("/stats")
+
+    assert stats_user.status_code==404
+
+    shorten_url=client.post("/shorten",json={
+        "url":"http://example.com"
+    })
+
+    assert shorten_url.status_code==200
+
+    stats_user=client.get("/stats")
+    
+    assert stats_user.status_code==200

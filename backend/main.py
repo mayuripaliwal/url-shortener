@@ -248,11 +248,34 @@ def isUserLoggedIn(_user_id=Depends(verify_user)):
         "logged_in":True
     }
 
+#this api returns all records for short urls created by currently logged in user
+#if, no user logged in, verify_user returns 401
+@app.get("/stats")
+def getAllAnalytics(user_id=Depends(verify_user)):
+    #1. get all records for given user
+    #2. if none, return 404
+    #2. else, return the records
+    stats=getAllStats(user_id)
+
+    if stats is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No short url found."
+        )
+
+    return {
+        "stats":stats
+    }
+
 #ensure this is placed after all other API end points, 
 # since it is direct route for short_code
 #this api redirects to the long url using the short url code
 @app.get("/{short_code}")
 def redirectUrl(short_code:str):
+    #1. Get long url for given short code
+    #2. if does not exist for the given user, return 404
+    #3. update stats for given short code
+    #4. return temporary redirect
     #doesnt matter where it comes from
     long_url=getLongUrl(short_code)
     if long_url is None:
@@ -491,3 +514,21 @@ def decode_jwt_access_token(token:str):
         )
 
     return decoded_jwt_token
+
+#this function returns all url records for a given user id
+#if none exist, return none
+def getAllStats(user_id:int):
+    cursor.execute("SELECT code, " \
+    "long_url, " \
+    "created_at, " \
+    "click_count, " \
+    "last_clicked_at " \
+    "FROM urls " \
+    "WHERE user_id=%s",(user_id,))
+
+    rows=cursor.fetchall()
+
+    if not rows:
+        return None
+
+    return rows
