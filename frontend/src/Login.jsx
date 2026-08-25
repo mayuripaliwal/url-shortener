@@ -30,14 +30,21 @@ function Login(){
             const result=await response.json()
 
             if (!response.ok){
-                if (typeof result.detail=="string"){
-                    setErrorMessage(result.detail);
+                if (response.status===401){
+                    setErrorMessage("Invalid email or password.");
                     setLoading(false);
                     return;
                 }
-                setErrorMessage(result.detail[0].msg);
-                setLoading(false);
-                return;
+                else if (response.status===422){
+                    setErrorMessage("Please enter a valid email address.");
+                    setLoading(false);
+                    return;
+                }
+                else{
+                    setLoading(false);
+                    return;
+                }
+                
             }
             
             //if successfully logged in 
