@@ -1,8 +1,10 @@
 import {useEffect} from "react";
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
+import AUTH_STATUS from './authStatus';
 
-function Logout(){
+
+function Logout({setAuthStatus}){
     const [isLoggedOut,setIsLoggedOut]=useState(false)
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
     const navigate=useNavigate()
@@ -30,6 +32,7 @@ function Logout(){
             }
 
             if (response.ok){
+                setAuthStatus(AUTH_STATUS.LOGGED_OUT)
                 setIsLoggedOut(true);
             }
         }

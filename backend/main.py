@@ -238,6 +238,18 @@ def logoutUser(response:Response):
         "message":"Logout successful"
     }
 
+#this api checks if user is logged in
+#if logged in, return True
+#else verify_user returns 401
+@app.get("/auth")
+def isUserLoggedIn(_user_id=Depends(verify_user)):
+
+    return {
+        "logged_in":True
+    }
+
+#ensure this is placed after all other API end points, 
+# since it is direct route for short_code
 #this api redirects to the long url using the short url code
 @app.get("/{short_code}")
 def redirectUrl(short_code:str):
