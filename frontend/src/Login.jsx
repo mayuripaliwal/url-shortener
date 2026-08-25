@@ -10,6 +10,7 @@ function Login(){
     const navigate=useNavigate();
 
     const [loading,setLoading]=useState(false);
+    const [errorMessage,setErrorMessage]=useState("");
     async function handleLogin(){
         setIsLoggedIn(false);
         setLoading(true);
@@ -30,11 +31,11 @@ function Login(){
 
             if (!response.ok){
                 if (typeof result.detail=="string"){
-                    alert(result.detail)
+                    setErrorMessage(result.detail);
                     setLoading(false);
                     return;
                 }
-                alert(result.detail[0].msg);
+                setErrorMessage(result.detail[0].msg);
                 setLoading(false);
                 return;
             }
@@ -44,7 +45,7 @@ function Login(){
             navigate("/")
         }
         catch (error){
-            alert("Unable to connect to server. Please try again.")
+            setErrorMessage("Unable to connect to server. Please try again.")
         }
         setLoading(false);
         
@@ -75,14 +76,22 @@ function Login(){
             onChange={(e)=>setUserPassword(e.target.value)}/>
 
             <br></br>
+
+            {errorMessage && (
+            <p className="error-message">{errorMessage}</p>
+            )}
+
             <br></br>
+
 
             <button className="click-button"
             onClick={handleLogin}>Login</button>
 
             {loading && (
-                <p>LJust a moment...</p>
+                <p>Just a moment...</p>
             )}
+
+
 
             {isLoggedIn && (
                 <p>Logged in successfully.</p>
