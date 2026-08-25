@@ -9,6 +9,8 @@ function Register(){
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
 
     const [loading,setLoading]=useState(false);
+
+    const [errorMessage, setErrorMessage]= useState("");
     async function handleSignUp(){
         setIsRegistered(false);
         setLoading(true);
@@ -30,11 +32,11 @@ function Register(){
             
             //handle error messages
             if (!response.ok) {
-                if (typeof result.detail=="string"){
-                    alert(result.detail)
+                if (response.status===422){
+                    setErrorMessage("Please enter a valid email address.");
                 }
-                else{
-                    alert(result.detail[0].msg)
+                else if (response.status===409) {
+                    setErrorMessage("Account already exists.");
                 }
                 setLoading(false);
                 return;
@@ -45,7 +47,7 @@ function Register(){
 
         }
         catch(error){
-            alert("Unable to connect to the server. Please try again.")
+            setErrorMessage("Unable to connect to the server. Please try again.")
             setLoading(false);
             return;
         }
@@ -86,6 +88,11 @@ function Register(){
         onChange={(e)=>setUserPassword(e.target.value)}
         required/>
         <br></br>
+
+        {errorMessage && (
+            <p className="error-message">{errorMessage}</p>
+        )}
+
         <br></br>
 
 
