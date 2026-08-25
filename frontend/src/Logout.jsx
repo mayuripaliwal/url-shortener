@@ -6,10 +6,13 @@ function Logout(){
     const [isLoggedOut,setIsLoggedOut]=useState(false)
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
     const navigate=useNavigate()
+    const [loading,setLoading]=useState(false)
+
     async function handleLogin(){
         navigate("/login");
     }
     async function handleLogout(){
+        setLoading(true);
         try{
             const response=await fetch(`${BACKEND_URL}/logout`,{
                 method:"POST",
@@ -20,6 +23,7 @@ function Logout(){
             if (response.status!==200){
                 
                 alert(result.detail);
+                setLoading(false);
                 return;
             }
 
@@ -30,6 +34,7 @@ function Logout(){
         catch(error) {
             alert("Unable to connect to server. Please try again.")
         }
+        setLoading(false);
     }
     useEffect(()=>{
         handleLogout();
@@ -38,6 +43,10 @@ function Logout(){
     return (
         <div>
             <h1>Logout</h1>
+
+            {loading && (
+                <p>Just a moment...</p>
+            )}
 
             {isLoggedOut && (
                 <div>

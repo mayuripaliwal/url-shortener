@@ -8,8 +8,11 @@ function Login(){
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
     const [isLoggedIn,setIsLoggedIn]=useState(false)
     const navigate=useNavigate();
+
+    const [loading,setLoading]=useState(false);
     async function handleLogin(){
-        setIsLoggedIn(false)
+        setIsLoggedIn(false);
+        setLoading(true);
         try{
             const response = await fetch(`${BACKEND_URL}/login`,{
                 method:"POST",
@@ -28,9 +31,11 @@ function Login(){
             if (!response.ok){
                 if (typeof result.detail=="string"){
                     alert(result.detail)
+                    setLoading(false);
                     return;
                 }
-                alert(result.detail[0].msg)
+                alert(result.detail[0].msg);
+                setLoading(false);
                 return;
             }
             
@@ -41,6 +46,7 @@ function Login(){
         catch (error){
             alert("Unable to connect to server. Please try again.")
         }
+        setLoading(false);
         
     }
     return (
@@ -73,6 +79,10 @@ function Login(){
 
             <button className="click-button"
             onClick={handleLogin}>Login</button>
+
+            {loading && (
+                <p>LJust a moment...</p>
+            )}
 
             {isLoggedIn && (
                 <p>Logged in successfully.</p>

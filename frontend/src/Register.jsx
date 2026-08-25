@@ -7,8 +7,11 @@ function Register(){
     const [userName,setUserName]=useState("")
     const [isRegistered, setIsRegistered]=useState(false)
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
+
+    const [loading,setLoading]=useState(false);
     async function handleSignUp(){
         setIsRegistered(false);
+        setLoading(true);
         //handle network errors
         try {
             const  response=await fetch(`${BACKEND_URL}/register`,{
@@ -33,6 +36,7 @@ function Register(){
                 else{
                     alert(result.detail[0].msg)
                 }
+                setLoading(false);
                 return;
             }
             
@@ -42,8 +46,10 @@ function Register(){
         }
         catch(error){
             alert("Unable to connect to the server. Please try again.")
+            setLoading(false);
             return;
         }
+        setLoading(false);
         
     }
     return (
@@ -81,10 +87,17 @@ function Register(){
         required/>
         <br></br>
         <br></br>
+
+
         <button
         className="click-button" 
         onClick={handleSignUp}
         >Sign Up</button>
+
+        {loading &&(
+            <p>Just a moment...</p>
+        )}
+
         {isRegistered && (
             <p>Registered Successfully</p>
         )}
