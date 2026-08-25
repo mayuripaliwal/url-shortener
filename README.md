@@ -69,6 +69,7 @@ flowchart LR
 | `POST` | `/shorten` | Yes | Create a shortened URL |
 | `GET` | `/{code}` | No | Redirect to the original URL |
 | `GET` | `/stats/{code}` | Yes | Retrieve analytics for a shortened URL |
+| `GET` | `/auth` | Yes | Check is user logged in or not |
 
 ## Database Schema
 
