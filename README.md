@@ -70,6 +70,7 @@ flowchart LR
 | `GET` | `/{code}` | No | Redirect to the original URL |
 | `GET` | `/stats/{code}` | Yes | Retrieve analytics for a shortened URL |
 | `GET` | `/auth` | Yes | Check is user logged in or not |
+| `GET` | `/stats`| Yes | Retrieve all analytics for a given user ID |
 
 ## Database Schema
 
