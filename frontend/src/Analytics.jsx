@@ -106,6 +106,7 @@ function Analytics({setAuthStatus}){
                         <p>Total Clicks: {totalClickCount}</p>
                     </article>
                 </div>
+                <br></br>
 
                 {/*all stats*/}
                 <div>

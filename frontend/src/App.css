@@ -399,3 +399,13 @@ h1{
 .analytics-table a:hover {
   text-decoration: underline;
 }
+
+.total-clicks-card{
+  width:fit-content;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  padding:20px 20px;
+  border-radius:8px;
+  font-size:30px;
+  color:#111827;
+}
