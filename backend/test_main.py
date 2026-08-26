@@ -27,7 +27,7 @@ def test_shorten_url():
     register_response=client.post("/register",json={
         "email":"login@example.com",
         "user_name":"string",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_response.status_code==200
@@ -35,7 +35,7 @@ def test_shorten_url():
     #login
     login_response=client.post("/login",json={
         "email":"login@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_response.status_code==200
@@ -60,7 +60,7 @@ def test_shorten_redirect_url():
     register_response=client.post("/register",json={
         "email":"login@example.com",
         "user_name":"string",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_response.status_code==200
@@ -68,7 +68,7 @@ def test_shorten_redirect_url():
     #login
     login_response=client.post("/login",json={
         "email":"login@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_response.status_code==200
@@ -105,7 +105,7 @@ def test_shorten_stats():
     register_response=client.post("/register",json={
         "email":"login@example.com",
         "user_name":"string",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_response.status_code==200
@@ -113,7 +113,7 @@ def test_shorten_stats():
     #login
     login_response=client.post("/login",json={
         "email":"login@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_response.status_code==200
@@ -156,7 +156,7 @@ def test_shorten_redirect_stats():
     register_response=client.post("/register",json={
         "email":"login@example.com",
         "user_name":"string",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_response.status_code==200
@@ -164,7 +164,7 @@ def test_shorten_redirect_stats():
     #login
     login_response=client.post("/login",json={
         "email":"login@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_response.status_code==200
@@ -212,7 +212,7 @@ def test_rate_limit():
     register_response=client.post("/register",json={
         "email":"login@example.com",
         "user_name":"string",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_response.status_code==200
@@ -220,7 +220,7 @@ def test_rate_limit():
     #login
     login_response=client.post("/login",json={
         "email":"login@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_response.status_code==200
@@ -246,7 +246,7 @@ def test_register_user():
     register_response=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"string",
-        "password":"string"
+        "password":"password"
     })
 
     assert register_response.status_code==200
@@ -255,14 +255,14 @@ def test_login_user():
     register_response=client.post("/register",json={
             "email":"login@example.com",
             "user_name":"string",
-            "password":"string"
+            "password":"password"
         })
     
     assert register_response.status_code==200
 
     login_response=client.post("/login",json={
         "email":"login@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_response.status_code==200
@@ -282,7 +282,7 @@ def test_authorization():
     register_user_A=client.post("/register",json={
         "email":"usera@example.com",
         "user_name":"usera",
-        "password":"string"
+        "password":"password"
     })
 
     assert register_user_A.status_code==200
@@ -290,7 +290,7 @@ def test_authorization():
     register_user_B=client.post("/register",json={
         "email":"userb@example.com",
         "user_name":"userb",
-        "password":"string"
+        "password":"password"
     })
 
     assert register_user_B.status_code==200
@@ -298,7 +298,7 @@ def test_authorization():
     #Login user A
     login_user_A=client.post("/login",json={
         "email":"usera@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_user_A.status_code==200
@@ -338,7 +338,7 @@ def test_authorization():
     #Login user b
     login_user_B=client.post("/login",json={
         "email":"userb@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_user_B.status_code==200
@@ -352,6 +352,24 @@ def test_authorization():
     assert check_stats.status_code==404
 
 def test_logout():
+
+    register_user=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"password"
+    })
+    
+    assert register_user.status_code==200
+
+    login_user=client.post("/login",json={
+        "email":"user@example.com",
+        "password":"password"
+    })
+    
+    assert login_user.status_code==200
+    
+    assert "access_token" in login_user.cookies
+
     response=client.post("/logout")
 
     assert response.status_code==200
@@ -360,14 +378,14 @@ def test_auth():
     register_user=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"user",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_user.status_code==200
 
     login_user=client.post("/login",json={
         "email":"user@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_user.status_code==200
@@ -388,14 +406,14 @@ def test_get_all_stats():
     register_user=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"user",
-        "password":"string"
+        "password":"password"
     })
     
     assert register_user.status_code==200
 
     login_user=client.post("/login",json={
         "email":"user@example.com",
-        "password":"string"
+        "password":"password"
     })
 
     assert login_user.status_code==200
