@@ -1,6 +1,6 @@
 from fastapi import FastAPI,HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, HttpUrl, EmailStr
+from pydantic import BaseModel, HttpUrl, EmailStr, Field
 from fastapi.responses import RedirectResponse
 import psycopg
 import os
@@ -36,13 +36,13 @@ class validUrl(BaseModel):
 #define model for user register
 class UserRegister(BaseModel):
     email:EmailStr
-    user_name:str
-    password:str
+    user_name:str=Field(min_length=1,max_length=30)
+    password:str=Field(min_length=8)
 
 #define model for user login
 class UserLogin(BaseModel):
     email:EmailStr
-    password:str
+    password:str=Field(min_length=8)
 
 #stores mapping of code to long_url
 conn=psycopg.connect(
