@@ -525,7 +525,8 @@ def getAllStats(user_id:int):
     "click_count, " \
     "last_clicked_at " \
     "FROM urls " \
-    "WHERE user_id=%s",(user_id,))
+    "WHERE user_id=%s " \
+    "ORDER BY created_at DESC",(user_id,))
 
     rows=cursor.fetchall()
 
