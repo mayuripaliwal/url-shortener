@@ -77,68 +77,77 @@ function Analytics({setAuthStatus}){
             </nav>
             <br></br>
 
-            <br></br>
+            
              {errorMessage && (
+                <div>
+                <br></br>
                 <p className="error-message">{errorMessage}</p>
+                <br></br>
+                </div>
             )}
 
             {loading &&<p>Loading stats...</p>}           
 
-        <br></br>
-        <h2>Track the performance of your shortened links.</h2>
-        <br></br>
+        
+        { allStats.length>0 && (
+            <div>
+                <h2>Track the performance of your shortened links.</h2>
+                <br></br>
 
-        {/*all stats*/}
-        <div>
-            <div className="analytics-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Short URL</th>
-                            <th>Original URL</th>
-                            <th>Created</th>
-                            <th>Last Clicked</th>
-                            <th>Click Count</th>
-                        </tr>
-                    </thead>
+                {/*all stats*/}
+                <div>
+                    <div className="analytics-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Short URL</th>
+                                    <th>Original URL</th>
+                                    <th>Created</th>
+                                    <th>Last Clicked</th>
+                                    <th>Click Count</th>
+                                </tr>
+                            </thead>
 
-                    <tbody>
-                        {allStats.map(function(stat){
-                        const [code,originalUrl,createdAt,clickCount,lastClickedAt]=stat;
+                            <tbody>
+                                {allStats.map(function(stat){
+                                const [code,originalUrl,createdAt,clickCount,lastClickedAt]=stat;
 
-                        const statShortUrl=`${BACKEND_URL}/${code}`;
+                                const statShortUrl=`${BACKEND_URL}/${code}`;
 
-                        return (
-                            <tr key={code}>
-                                <td>
-                                    <a 
-                                    href={statShortUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer">{statShortUrl}</a>
-                                </td>
-                                <td>
-                                    <a
-                                    href={originalUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer">{originalUrl}</a>
-                                </td>
-                                <td>
-                                    {formatDateTime(createdAt)}
-                                </td>
-                                <td>
-                                    {lastClickedAt?formatDateTime(lastClickedAt):"None"}
-                                </td>
-                                <td>
-                                    {clickCount}
-                                </td>
-                                
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
+                                return (
+                                    <tr key={code}>
+                                        <td>
+                                            <a 
+                                            href={statShortUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer">{statShortUrl}</a>
+                                        </td>
+                                        <td>
+                                            <a
+                                            href={originalUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer">{originalUrl}</a>
+                                        </td>
+                                        <td>
+                                            {formatDateTime(createdAt)}
+                                        </td>
+                                        <td>
+                                            {lastClickedAt?formatDateTime(lastClickedAt):"None"}
+                                        </td>
+                                        <td>
+                                            {clickCount}
+                                        </td>
+                                        
+                                    </tr>
+                                );
+                            })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
+        )}
+        
 
 
         </div>
