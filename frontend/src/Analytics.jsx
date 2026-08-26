@@ -64,6 +64,14 @@ function Analytics({setAuthStatus}){
         handleGetStats();
     },[])
 
+    //compute total clicks from all the short url click counts for this user
+    const totalClickCount=allStats.reduce(function(
+        total,
+        stat
+    ){
+        return total+stat[3];
+    },0);
+
     return (
         <div>
 
@@ -92,6 +100,12 @@ function Analytics({setAuthStatus}){
             <div>
                 <h2>Track the performance of your shortened links.</h2>
                 <br></br>
+                {/*Total click count*/}
+                <div>
+                    <article className="total-clicks-card">
+                        <p>Total Clicks: {totalClickCount}</p>
+                    </article>
+                </div>
 
                 {/*all stats*/}
                 <div>
