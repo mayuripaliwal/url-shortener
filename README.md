@@ -94,7 +94,7 @@ flowchart LR
 |---|---|---|---|
 | `user_id` |INTEGER|PRIMARY KEY| Unique identifier for the user, PRIMARY KEY |
 | `email` |TEXT|UNIQUE| User's email address|
-| `user_name` |TEXT|| User's username |
+| `user_name` |TEXT|1-30 characters| User's username |
 | `password_hash` |TEXT|| Bcrypt hash of the user's password |
 
 ### `Urls`
