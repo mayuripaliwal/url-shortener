@@ -367,3 +367,35 @@ h1{
   justify-content:left;
   margin: 0;
 }
+
+.analytics-table{
+  text-align:left;
+  width:fit-content;
+  justify-content:left;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  
+}
+
+.analytics-table th{
+  padding: 15px 25px;
+  text-align:left;
+  background-color: #e9ecef;
+  color: #111827;
+}
+.analytics-table td{
+  padding: 15px 25px;
+  text-align:left;
+  background-color: #f8f9fa;
+  color:#333333;
+}
+
+
+.analytics-table a{
+  text-decoration:none;
+  color: #2563eb;
+}
+
+.analytics-table a:hover {
+  text-decoration: underline;
+}

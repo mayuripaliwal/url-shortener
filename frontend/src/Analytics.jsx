@@ -1,58 +1,32 @@
 import { useState } from 'react';
 import { NavLink } from "react-router-dom";
-import {useNavigate} from "react-router-dom";
 import AUTH_STATUS from './authStatus';
+import {useEffect} from 'react';
 
 function Analytics({setAuthStatus}){
-    const [clickCount,setClickCount]=useState("");
-    const [longUrl,setLongUrl]=useState("");
-    const [shortUrl,setShortUrl]=useState("");
-    const BACKEND_URL=import.meta.env.VITE_BACKEND_URL;
-    const URL_PREFIX=`${BACKEND_URL}/`;
-    const [loading,setLoading]=useState(false);
-    const [createdAt,setCreatedAt]=useState("");
-    const [lastClickedAt,setLastClickedAt]=useState("");
     
-    const [showLoginButton,setShowLoginButton]=useState(false);
-
-    const navigate=useNavigate();
+    const BACKEND_URL=import.meta.env.VITE_BACKEND_URL;
+    
+    const [loading,setLoading]=useState(false);
 
     const [errorMessage,setErrorMessage]=useState("");
 
+    const [allStats,setAllStats]=useState([]);
+
     async function handleGetStats(){
         setLoading(true);
-        setClickCount("");
-        setLongUrl("");
-        setCreatedAt("");
-        setLastClickedAt("");
         //handle network errors
         try{
-            //first check if it is a valid short url
-            //then, extract the code from the url
             
-            if (!shortUrl.startsWith(URL_PREFIX)){
-                setErrorMessage("Please enter a valid short URL.");
-                setLoading(false);
-                return;
-            }
-            
-            const shortCode=shortUrl.substring(URL_PREFIX.length);
-            
-            const response=await fetch(`${BACKEND_URL}/stats/${shortCode}`,{
+            const response=await fetch(`${BACKEND_URL}/stats`,{
                 "method":"GET",
-                "credentials":"include",
-                headers:{
-                    "Content-Type":"application/json"
-                }
+                "credentials":"include"
             });
             
             const result=await response.json();
 
             if (response.ok){
-                setClickCount(result.click_count);
-                setCreatedAt(result.created_at);
-                setLastClickedAt(result.last_clicked_at);
-                setLongUrl(result.long_url);
+                setAllStats(result.stats);
             }
             else if (response.status===401){
                 setAuthStatus(AUTH_STATUS.LOGGED_OUT);
@@ -60,7 +34,7 @@ function Analytics({setAuthStatus}){
                 setShowLoginButton(true);
             }
             else if (response.status===404){
-                setErrorMessage("Short URL not found.");
+                setErrorMessage("No short URLs found.");
             }
             else{
                 setErrorMessage("Something went wrong. Please try again.")
@@ -71,10 +45,6 @@ function Analytics({setAuthStatus}){
             setErrorMessage("Unable to connect to the server. Please try again.");
         }
         setLoading(false);
-    }
-
-    function handleLogin(){
-        navigate("/login");
     }
 
     //this function converts the timestamp into a user -friendly format
@@ -91,6 +61,10 @@ function Analytics({setAuthStatus}){
         return new Intl.DateTimeFormat(undefined,options).format(date);
     }
 
+    useEffect(()=>{
+        handleGetStats();
+    },[])
+
     return (
         <div>
 
@@ -102,79 +76,74 @@ function Analytics({setAuthStatus}){
                 <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
             </nav>
             <br></br>
-            <h1>Paste your link. See the insights.</h1>
-
-            <div className="url-form">
-            <input
-            className="input"
-            type="text" 
-            placeholder="Enter short URL" 
-            value={shortUrl}
-            onChange={(e)=>{
-                setShortUrl(e.target.value);
-                setClickCount("");  
-                setCreatedAt("");
-                setLastClickedAt("");
-                setLongUrl("");
-            }
-            }/>
-            
-            <button className="click-button"
-             onClick={handleGetStats}>Get Analytics</button>
-             </div>
 
             <br></br>
              {errorMessage && (
                 <p className="error-message">{errorMessage}</p>
             )}
 
-            {loading &&<p>Loading stats...</p>}
-            
-            {clickCount!==""&&(
-                <div>
-                
-            <section className="analytics-details">
-            
-            <strong><p className="analytics-click-count">Total clicks: {clickCount}</p></strong>
-            
-            </section>
-                
-            <br></br>
+            {loading &&<p>Loading stats...</p>}           
 
-            <section className="analytics-details">
-            <h2>Link Details</h2>
-            <div className="analytics-card">
-             <p>Short URL: <a 
-            href={shortUrl} 
-            target="_blank"
-            rel="noopener noreferrer">{shortUrl}</a></p>
+        <br></br>
+        <h2>Track the performance of your shortened links.</h2>
+        <br></br>
 
-            
-            
+        {/*all stats*/}
+        <div>
+            <div className="analytics-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Short URL</th>
+                            <th>Original URL</th>
+                            <th>Created</th>
+                            <th>Last Clicked</th>
+                            <th>Click Count</th>
+                        </tr>
+                    </thead>
 
-            <p>Created: {formatDateTime(createdAt)}</p>
+                    <tbody>
+                        {allStats.map(function(stat){
+                        const [code,originalUrl,createdAt,clickCount,lastClickedAt]=stat;
 
-            {lastClickedAt&& <p>Last Clicked: {formatDateTime(lastClickedAt)}</p>}
-            
-            <p>Original URL: <a 
-            href={longUrl}
-            target="_blank"
-            rel="noopener noreferrer">{longUrl}</a></p>
+                        const statShortUrl=`${BACKEND_URL}/${code}`;
+
+                        return (
+                            <tr key={code}>
+                                <td>
+                                    <a 
+                                    href={statShortUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer">{statShortUrl}</a>
+                                </td>
+                                <td>
+                                    <a
+                                    href={originalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer">{originalUrl}</a>
+                                </td>
+                                <td>
+                                    {formatDateTime(createdAt)}
+                                </td>
+                                <td>
+                                    {lastClickedAt?formatDateTime(lastClickedAt):"None"}
+                                </td>
+                                <td>
+                                    {clickCount}
+                                </td>
+                                
+                            </tr>
+                        );
+                    })}
+                    </tbody>
+                </table>
             </div>
-            </section>
-            </div>
-            
-            )}
-            
-
-            <br></br>
-
-            {showLoginButton && (
-                <button
-                className="click-button"
-                onClick={handleLogin}>Login</button>
-            )}
         </div>
+
+
+        </div>
+
+        
     );
 }
 
