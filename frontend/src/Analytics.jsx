@@ -31,7 +31,6 @@ function Analytics({setAuthStatus}){
             else if (response.status===401){
                 setAuthStatus(AUTH_STATUS.LOGGED_OUT);
                 setErrorMessage("Please log in to continue.")
-                setShowLoginButton(true);
             }
             else if (response.status===404){
                 setErrorMessage("No short URLs found.");

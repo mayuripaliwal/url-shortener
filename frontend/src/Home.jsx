@@ -11,8 +11,6 @@ function App({setAuthStatus}) {
   const BACKEND_URL=import.meta.env.VITE_BACKEND_URL
   const [loading,setLoading]=useState(false)
 
-  const [showLoginButton,setShowLoginButton]=useState(false)
-
   const navigate=useNavigate();
   const features = [
   {
@@ -64,7 +62,6 @@ function App({setAuthStatus}) {
         //also, update auth status
         setAuthStatus(AUTH_STATUS.LOGGED_OUT);
         setErrorMessage("Please log in to continue.");
-        setShowLoginButton(true);
       }
       else if (response.status===429) {
         setErrorMessage("Too many requests. Please try again shortly.");
@@ -83,10 +80,6 @@ function App({setAuthStatus}) {
     }
     setLoading(false);
     
-  }
-
-  function handleLogin(){
-    navigate("/login");
   }
 
   //this function copies the short url to clipboard
@@ -164,14 +157,6 @@ function App({setAuthStatus}) {
       <p className="error-message">{errorMessage}</p>
     )}
     <br></br>
-    
-
-    {showLoginButton && (
-        <button
-        className="click-button"
-        onClick={handleLogin}>Login</button>
-    )}
-
     
     
     <section className="features-section">
