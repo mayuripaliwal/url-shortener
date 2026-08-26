@@ -431,3 +431,8 @@ h1{
 .analytics-table td:nth-child(2) {
   width: 30%;
 }
+
+.auth-check{
+  font-size:25px;
+  margin:0 auto;
+}
