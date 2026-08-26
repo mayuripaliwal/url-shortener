@@ -57,7 +57,8 @@ cursor=conn.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS users(" \
 "user_id SERIAL PRIMARY KEY, " \
 "email TEXT UNIQUE NOT NULL, " \
-"user_name TEXT NOT NULL, " \
+"user_name TEXT NOT NULL " \
+"CHECK (char_length(user_name) BETWEEN 1 AND 30), " \
 "password_hash TEXT NOT NULL )")
 
 cursor.execute("CREATE TABLE IF NOT EXISTS urls(" \
