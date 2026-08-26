@@ -16,6 +16,18 @@ function Register(){
         setLoading(true);
         //handle network errors
         try {
+            //handle password and username validation
+            if (userPassword.length <8){
+                setErrorMessage("Password must contain at least 8 characters.");
+                setLoading(false);
+                return;
+            }
+            if (userName.length <1){
+                setErrorMessage("Username cannot be empty.");
+                setLoading(false);
+                return;
+            }
+
             const  response=await fetch(`${BACKEND_URL}/register`,{
                 "method":"POST",
                 headers:{
