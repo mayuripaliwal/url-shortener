@@ -18,7 +18,7 @@ A full-stack URL Shortener built using React, FastAPI, and PostgreSQL
 ![Home page](screenshots/shorten-url.png)
 
 ### 3. View analytics
-![Analytics page](screenshots/url-analytics.png)
+![Analytics page](screenshots/url-click-analytics.png)
 
 ## Architecture Diagram
 
