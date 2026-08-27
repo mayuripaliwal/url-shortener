@@ -13,16 +13,12 @@ jobs:
             env:
                 POSTGRES_USER: postgres
                 POSTGRES_PASSWORD: postgres
-                POSTGRES_DB: test_db
+                POSTGRES_DB: postgres
             ports: 
                 - 5432:5432
 
     env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: test_db
-        DB_USER: postgres
-        DB_PASSWORD: postgres
+        CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/postgres
         JWT_SECRET_KEY: test-secret-key
 
     steps:
