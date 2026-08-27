@@ -8,6 +8,7 @@ import {useState} from 'react';
 import {useEffect} from 'react';
 import {Navigate} from "react-router-dom";
 import AUTH_STATUS from './authStatus';
+import Welcome from './Welcome';
 
 function App(){
   
@@ -61,11 +62,12 @@ function App(){
   if (authStatus===AUTH_STATUS.LOGGED_OUT){
     return (
     <Routes>
+      <Route path="/welcome" element={<Welcome/>}/>
       <Route path="/signup" element={<Register/>}/>
       <Route path="/login" element={<Login setAuthStatus={setAuthStatus}/>}/>
 
       {/*redirect*/}
-      <Route path="*" element={<Navigate to="/login" replace/>}/>
+      <Route path="*" element={<Navigate to="/welcome" replace/>}/>
     </Routes>
     )
   }

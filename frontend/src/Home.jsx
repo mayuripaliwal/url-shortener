@@ -12,28 +12,6 @@ function App({setAuthStatus}) {
   const [loading,setLoading]=useState(false)
 
   const navigate=useNavigate();
-  const features = [
-  {
-    title: "Fast & Reliable",
-    description: "Generate short URLs quickly with a simple and reliable experience."
-  },
-  {
-    title: "Secure Authentication",
-    description: "Your links are protected with authenticated access and secure sessions."
-  },
-  {
-    title: "Link Analytics",
-    description: "Track clicks and understand how your shortened links perform."
-  },
-  {
-    title: "Easy Link Management",
-    description: "Create and manage your shortened URLs from one place."
-  },
-  {
-    title: "Simple Interface",
-    description: "A clean interface that makes shortening URLs quick and effortless."
-  }
-];
 
   const [errorMessage,setErrorMessage]=useState("");
 
@@ -100,7 +78,9 @@ function App({setAuthStatus}) {
         <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
       </nav>
       <br></br>
-      <h1>
+      <h1
+      className="mt-10 text-center text-2xl/9 tracking-tight text-gray-900"
+      >
         <TypeAnimation
           sequence={[
             "Turn your long URLs into beautifully simple links.",
@@ -117,64 +97,61 @@ function App({setAuthStatus}) {
         
         </h1>
       <br></br>
-      <div className="url-form">
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
     <input
-    className="input"
+    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
     type="text"
     placeholder="Enter the link here"
     value={url}
     onChange={(e)=>setUrl(e.target.value)}
     />
-
-    <button 
-    className="click-button"
-    onClick={handleShortenUrl}>Shorten URL</button>
-
-    </div>
-    {loading && (
-      <p>Generating short URL...</p>
+    
+    {errorMessage && (
+      <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
     )}
-
+    {loading && (
+      <p className="mt-4 text-center text-sm text-gray-600">Generating short URL...</p>
+    )}
     <br></br>
+    <div>
+    <button 
+    className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+    onClick={handleShortenUrl}>Shorten URL</button>
+    </div>
+    
+    
+    </div>
+    <br></br>
+    <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm"> 
 
     {shortUrl && !loading && (
-      <div className="shortened-url-display">
-      <p>Shortened URL : <a 
+      <div>
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div>
+      <p className="text-sm font-medium text-gray-500">
+        Your shortened URL
+      </p>
+      <a 
+      className="mt-2 block break-all text-sm font-semibold text-indigo-600 hover:text-indigo-500"
       href={shortUrl}
       target="_blank"
       rel="noopener noreferrer"> {shortUrl}
       </a>
-      </p>
-      <button 
-      className="click-button"
+      </div>
+      
+      </div>
+      <div>
+        <button 
+      className="mt-3 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
       onClick={handleCopy}>{copied?"Copied":"Copy"}</button>
+      </div>
       </div>
       )
     }
     <br></br>
 
-    {errorMessage && (
-      <p className="error-message">{errorMessage}</p>
-    )}
-    <br></br>
     
-    
-    <section className="features-section">
-      <h2>Features</h2>
-
-      <div className="features-grid">
-        {features.map(function(feature,index){
-          return (
-            <div className="feature-card" key={index}>
-              <h3>{feature.title}</h3>
-
-              <p>{feature.description}</p>
-            </div>
-          )
-        })}
-      </div>
-    </section>
-
+    </div>
     </div>
 
     

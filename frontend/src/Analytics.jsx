@@ -88,17 +88,17 @@ function Analytics({setAuthStatus}){
              {errorMessage && (
                 <div>
                 <br></br>
-                <p className="error-message">{errorMessage}</p>
+                <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
                 <br></br>
                 </div>
             )}
 
-            {loading &&<p>Loading stats...</p>}           
+            {loading &&<p className="mt-4 text-center text-sm text-grey-600">Loading stats...</p>}           
 
         
         { allStats.length>0 && (
             <div>
-                <h2>Track the performance of your shortened links.</h2>
+                <h2 className="mt-4 text-center text-m text-gray-600">Track the performance of your shortened links.</h2>
                 <br></br>
                 {/*Total click count*/}
                 <div>
