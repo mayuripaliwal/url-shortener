@@ -49,7 +49,7 @@ flowchart LR
 
 **CI/CD:** GitHub Actions
 
-**Deployment:** Vercel, Render
+**Deployment:** Vercel (frontend), Render (backend), Neon (PostgreSQL)
 
 ## Features
 - User registration and login
