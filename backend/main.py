@@ -44,30 +44,35 @@ class UserLogin(BaseModel):
     email:EmailStr
     password:str=Field(min_length=8)
 
-#stores mapping of code to long_url
-conn=psycopg.connect(
-    os.getenv("CONNECTION_STRING")
-)
-cursor=conn.cursor()
+#create tables
+def create_tables():
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+    try:
+        #this closes cursor automatically once this block is done executing
+        with conn.cursor() as cursor:
+            cursor.execute("CREATE TABLE IF NOT EXISTS users(" \
+            "user_id SERIAL PRIMARY KEY, " \
+            "email TEXT UNIQUE NOT NULL, " \
+            "user_name TEXT NOT NULL " \
+            "CHECK (char_length(user_name) BETWEEN 1 AND 30), " \
+            "password_hash TEXT NOT NULL )")
 
-cursor.execute("CREATE TABLE IF NOT EXISTS users(" \
-"user_id SERIAL PRIMARY KEY, " \
-"email TEXT UNIQUE NOT NULL, " \
-"user_name TEXT NOT NULL " \
-"CHECK (char_length(user_name) BETWEEN 1 AND 30), " \
-"password_hash TEXT NOT NULL )")
+            cursor.execute("CREATE TABLE IF NOT EXISTS urls(" \
+            "url_id SERIAL PRIMARY KEY, " \
+            "code TEXT UNIQUE," \
+            "long_url TEXT NOT NULL," \
+            "click_count INTEGER NOT NULL DEFAULT 0, " \
+            "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), " \
+            "last_clicked_at TIMESTAMPTZ, " \
+            "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE)")
+    
+            conn.commit()
+    finally:
+        conn.close()
 
-cursor.execute("CREATE TABLE IF NOT EXISTS urls(" \
-"url_id SERIAL PRIMARY KEY, " \
-"code TEXT UNIQUE," \
-"long_url TEXT NOT NULL," \
-"click_count INTEGER NOT NULL DEFAULT 0, " \
-"created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), " \
-"last_clicked_at TIMESTAMPTZ, " \
-"user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE)")
-
-conn.commit()
-
+create_tables()
 
 app.add_middleware(
     CORSMiddleware,
@@ -99,6 +104,17 @@ def verify_user(request:Request):
 
     return int(user_id)
 
+#create a db connection
+#give it to the API calling it
+#finally, close the connection
+def get_db():
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+    try:
+        yield conn
+    finally:
+        conn.close()    
 
 # API end points
 @app.get('/')
@@ -110,7 +126,7 @@ def home():
 #this api returns a shortened url
 #Return a short url for a given long url and user id
 @app.post('/shorten')
-def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user)):
+def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. Check if the ip is rate limited
     #2. If short code exists for the long url and the given user id, return the short url
     #3. Else create the short code for the user id, and return the short url
@@ -123,11 +139,10 @@ def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user)):
             status_code=429,
             detail="Too many requests. Please try again later."
         )
-
-    code=getCodeForUrl(long_url,user_id)
+    code=getCodeForUrl(long_url,user_id,conn)
 
     if code is None:
-        code=saveUrl(long_url,user_id)
+        code=saveUrl(long_url,user_id,conn)
         
     short_url=f"{BASE_URL}/{code}"
 
@@ -137,8 +152,8 @@ def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user)):
     
 #this api returns number of times a short url was clicked
 @app.get("/stats/{short_code}")
-def getAnalytics(short_code:str, user_id=Depends(verify_user)):
-    stats=getStats(short_code,user_id)
+def getAnalytics(short_code:str, user_id=Depends(verify_user),conn=Depends(get_db)):
+    stats=getStats(short_code,user_id,conn)
 
     #if given short url does not exist for the given user id, return 404
     if stats is None:
@@ -161,8 +176,8 @@ def getAnalytics(short_code:str, user_id=Depends(verify_user)):
 
 #define register endpoint
 @app.post("/register")
-def registerUser(user: UserRegister):
-    status=saveUser(user)
+def registerUser(user: UserRegister,conn=Depends(get_db)):
+    status=saveUser(user,conn)
 
     if status is True:
         return {
@@ -176,10 +191,10 @@ def registerUser(user: UserRegister):
     
 #define login endpoint
 @app.post("/login")
-def loginUser(user:UserLogin, response: Response):
+def loginUser(user:UserLogin, response: Response,conn=Depends(get_db)):
     email=user.email
     password=user.password
-    password_hash=findUser(email)
+    password_hash=findUser(email,conn)
 
     if password_hash is None:
         #TODO: handle return
@@ -197,7 +212,7 @@ def loginUser(user:UserLogin, response: Response):
         )
 
     #generate jwt token
-    user_id=findUserId(email)
+    user_id=findUserId(email,conn)
     token_expiry_time=datetime.now(timezone.utc)+JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 
     payload={"sub":str(user_id),"exp":token_expiry_time}
@@ -248,11 +263,11 @@ def isUserLoggedIn(_user_id=Depends(verify_user)):
 #this api returns all records for short urls created by currently logged in user
 #if, no user logged in, verify_user returns 401
 @app.get("/stats")
-def getAllAnalytics(user_id=Depends(verify_user)):
+def getAllAnalytics(user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. get all records for given user
     #2. if none, return 404
     #2. else, return the records
-    stats=getAllStats(user_id)
+    stats=getAllStats(user_id,conn)
 
     if stats is None:
         raise HTTPException(
@@ -268,75 +283,78 @@ def getAllAnalytics(user_id=Depends(verify_user)):
 # since it is direct route for short_code
 #this api redirects to the long url using the short url code
 @app.get("/{short_code}")
-def redirectUrl(short_code:str):
+def redirectUrl(short_code:str,conn=Depends(get_db)):
     #1. Get long url for given short code
     #2. if does not exist for the given user, return 404
     #3. update stats for given short code
     #4. return temporary redirect
     #doesnt matter where it comes from
-    long_url=getLongUrl(short_code)
+    long_url=getLongUrl(short_code,conn)
     if long_url is None:
         raise HTTPException(
             status_code=404,
             detail="Short URL not found"
         )
 
-    updateStats(short_code)
+    updateStats(short_code,conn)
     return RedirectResponse(
         url=long_url,
         status_code=307)
 
 #stores the long_url and its code in storage
-def saveUrl(long_url:str,user_id:int):
+def saveUrl(long_url:str,user_id:int,conn:psycopg.Connection):
 
     #1. Add long_url in urls for the given user id
     #2. Use the last inserted id to encode long_url to base62 
     #3. Update the row with the code
     #4. Return the code
 
+    with conn.cursor() as cursor:
+        cursor.execute("INSERT INTO urls (" \
+        "long_url, created_at,user_id) " \
+        "VALUES (%s,NOW(),%s) " \
+        "RETURNING url_id",
+        (long_url,user_id))
 
-    cursor.execute("INSERT INTO urls (" \
-    "long_url, created_at,user_id) " \
-    "VALUES (%s,NOW(),%s) " \
-    "RETURNING url_id",
-    (long_url,user_id))
+        url_id=cursor.fetchone()[0]
 
-    url_id=cursor.fetchone()[0]
+        #encode based on auto increment id
+        code=encodeBase62(url_id)
 
-    #encode based on auto increment id
-    code=encodeBase62(url_id)
+        #update the code
+        cursor.execute("UPDATE urls " \
+        "SET code=%s " \
+        "WHERE url_id=%s",(code,url_id))
 
-    #update the code
-    cursor.execute("UPDATE urls " \
-    "SET code=%s " \
-    "WHERE url_id=%s",(code,url_id))
-
-    #commit only after insert and update
-    conn.commit()
+        #commit only after insert and update
+        conn.commit()
 
     return code
 
 
 #retrieves the long_url from storage
-def getLongUrl(code:str):
-    cursor.execute("SELECT long_url " \
-    "FROM urls " \
-    "WHERE code=%s",(code,))
+def getLongUrl(code:str,conn:psycopg.Connection):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT long_url " \
+        "FROM urls " \
+        "WHERE code=%s",(code,))
 
-    row=cursor.fetchone()
+        row=cursor.fetchone()
+
     if row is None:
         return None
+    
     return row[0]
 
-
 #retrieves the code for a given long url and user id
-def getCodeForUrl(long_url:str,user_id:int):
-    cursor.execute("SELECT code " \
-    "FROM urls " \
-    "WHERE long_url=%s " \
-    "AND user_id=%s",(long_url,user_id))
+def getCodeForUrl(long_url:str,user_id:int,conn:psycopg.Connection):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT code " \
+        "FROM urls " \
+        "WHERE long_url=%s " \
+        "AND user_id=%s",(long_url,user_id))
 
-    row=cursor.fetchone()
+        row=cursor.fetchone()
 
     if row is None:
         return None
@@ -360,23 +378,26 @@ def encodeBase62(url_id:int):
 
     return answer
 
-def updateStats(code:str):
-    cursor.execute("UPDATE urls " \
-    "SET click_count=click_count+1, " \
-    "last_clicked_at=NOW() " \
-    "WHERE code=%s",(code,))
-    conn.commit()
+def updateStats(code:str,conn:psycopg.Connection):
+    with conn.cursor() as cursor:
 
-def getStats(code:str,user_id:int):
-    cursor.execute("SELECT click_count, "\
-    "created_at, " \
-    "last_clicked_at, " \
-    "long_url    " \
-    "FROM urls " \
-    "WHERE code=%s " \
-    "AND user_id=%s",(code,user_id))
+        cursor.execute("UPDATE urls " \
+        "SET click_count=click_count+1, " \
+        "last_clicked_at=NOW() " \
+        "WHERE code=%s",(code,))
+        conn.commit()
 
-    row=cursor.fetchone()
+def getStats(code:str,user_id:int,conn:psycopg.Connection):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT click_count, "\
+        "created_at, " \
+        "last_clicked_at, " \
+        "long_url    " \
+        "FROM urls " \
+        "WHERE code=%s " \
+        "AND user_id=%s",(code,user_id))
+
+        row=cursor.fetchone()
 
     if row is None:
         return None
@@ -411,7 +432,7 @@ def hash_password(password:str):
     hashed=bcrypt.hashpw(byte_password,salt)
     return hashed.decode("utf-8")
 
-def saveUser(user:UserRegister):
+def saveUser(user:UserRegister,conn:psycopg.Connection):
     #1. First check if user already exists in db
     #2. Return false when user already exist
     #3. Else, hash user's password
@@ -420,33 +441,39 @@ def saveUser(user:UserRegister):
     user_name=user.user_name
     password=user.password
 
-    cursor.execute("SELECT user_id " \
-    "FROM users " \
-    "WHERE email=%s",(email,))
+    with conn.cursor() as cursor:
 
-    row=cursor.fetchone()
+        cursor.execute("SELECT user_id " \
+        "FROM users " \
+        "WHERE email=%s",(email,))
+
+        row=cursor.fetchone()
     
     if row is not None:
         return False
 
     password_hash=hash_password(password)
 
-    cursor.execute("INSERT INTO users(" \
-    "email,user_name,password_hash) " \
-    "VALUES (%s,%s,%s)",(email,user_name,password_hash))
-    conn.commit()
+    with conn.cursor() as cursor:
+
+        cursor.execute("INSERT INTO users(" \
+        "email,user_name,password_hash) " \
+        "VALUES (%s,%s,%s)",(email,user_name,password_hash))
+
+        conn.commit()
 
     return True
 
 
-def findUser(email:str):
+def findUser(email:str,conn:psycopg.Connection):
     #If user registered, then return email id
     #Else user does not exist, so they are not registered
-    cursor.execute("SELECT password_hash " \
-    "FROM users " \
-    "WHERE email=%s",(email,))
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT password_hash " \
+        "FROM users " \
+        "WHERE email=%s",(email,))
 
-    row=cursor.fetchone()
+        row=cursor.fetchone()
 
     #return none if user not registered
     if row is None:
@@ -480,14 +507,15 @@ def create_jwt_access_token(payload:dict):
     return encoded_jwt_token
 
 
-def findUserId(email:str):
+def findUserId(email:str,conn:psycopg.Connection):
     #Find user id by email
     #If not found, then user does not exist
-    cursor.execute("SELECT user_id " \
-    "FROM users " \
-    "WHERE email=%s",(email,))
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT user_id " \
+        "FROM users " \
+        "WHERE email=%s",(email,))
 
-    row=cursor.fetchone()
+        row=cursor.fetchone()
 
     if row is None:
         return None
@@ -514,17 +542,18 @@ def decode_jwt_access_token(token:str):
 
 #this function returns all url records for a given user id
 #if none exist, return none
-def getAllStats(user_id:int):
-    cursor.execute("SELECT code, " \
-    "long_url, " \
-    "created_at, " \
-    "click_count, " \
-    "last_clicked_at " \
-    "FROM urls " \
-    "WHERE user_id=%s " \
-    "ORDER BY created_at DESC",(user_id,))
+def getAllStats(user_id:int,conn:psycopg.Connection):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT code, " \
+        "long_url, " \
+        "created_at, " \
+        "click_count, " \
+        "last_clicked_at " \
+        "FROM urls " \
+        "WHERE user_id=%s " \
+        "ORDER BY created_at DESC",(user_id,))
 
-    rows=cursor.fetchall()
+        rows=cursor.fetchall()
 
     if not rows:
         return None

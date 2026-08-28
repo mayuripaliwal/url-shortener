@@ -1,15 +1,26 @@
 from fastapi.testclient import TestClient
-from main import app,BASE_URL,rate_limit_store,cursor,conn
+from main import app,BASE_URL,rate_limit_store
 import pytest
+import psycopg
+import os
 
 client=TestClient(app)
 
 @pytest.fixture(autouse=True)
 def reset_test_state():
-    #reset rate limiter,user, url records , and cookies before each test
+    #reset rate limiter,delete user and url tables, and cookies before each test
     rate_limit_store.clear()
-    cursor.execute("DELETE FROM URLS")
-    cursor.execute("DELETE FROM USERS")
+
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+
+    with conn.cursor() as cursor:
+        cursor.execute("DELETE FROM URLS")
+        cursor.execute("DELETE FROM USERS")
+
+        conn.commit()
+
     client.cookies.clear()
     conn.commit()
 
