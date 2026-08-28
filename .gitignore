@@ -15,8 +15,11 @@ frontend/dist/
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # VS Code
 .vscode/
 
 *.db
+
