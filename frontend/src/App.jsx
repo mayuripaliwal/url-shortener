@@ -52,14 +52,14 @@ function App(){
       <div className="auth-check">
         <br></br>
         <h2>Just a moment...</h2>
-        <p>We’re checking your session and getting things ready. This may take up to a minute.</p>
+        <p className="mt-4 text-center text-m text-gray-900">We’re checking your session and getting things ready. This may take up to a minute.</p>
       </div>
     
     )
   }
   //if user not logged in, show them login,sign up page
   //if they go to any other route,redirect them to login,sign up page
-  if (authStatus===AUTH_STATUS.LOGGED_OUT){
+  else if (authStatus===AUTH_STATUS.LOGGED_OUT){
     return (
     <Routes>
       <Route path="/welcome" element={<Welcome/>}/>
