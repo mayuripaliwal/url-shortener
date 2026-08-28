@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import AUTH_STATUS from './authStatus';
 import {useEffect} from 'react';
+import Navbar from './Navbar';
 
 function Analytics({setAuthStatus}){
     
@@ -75,25 +76,17 @@ function Analytics({setAuthStatus}){
     return (
         <div>
 
-            <nav className="navbar">
-                <NavLink className={({isActive})=> isActive ? "active-link":"nav-link"}to="/">Home</NavLink>
-                
-                <NavLink className={({isActive})=> isActive ? "active-link":"nav-link"}  to="/analytics">Analytics</NavLink>
-                
-                <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
-            </nav>
+            <Navbar currPage={'Analytics'}/>
             <br></br>
 
             
              {errorMessage && (
                 <div>
-                <br></br>
                 <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
-                <br></br>
                 </div>
             )}
 
-            {loading &&<p className="mt-4 text-center text-sm text-grey-600">Loading stats...</p>}           
+            {loading &&<p className="mt-4 text-center text-sm text-gray-600">Loading stats...</p>}           
 
         
         { allStats.length>0 && (

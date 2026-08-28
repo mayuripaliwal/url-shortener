@@ -4,6 +4,7 @@ import './App.css'
 import {useNavigate} from "react-router-dom";
 import {TypeAnimation} from "react-type-animation";
 import AUTH_STATUS from './authStatus';
+import Navbar from './Navbar';
 
 function App({setAuthStatus}) {
   const [url,setUrl]=useState("")
@@ -70,14 +71,7 @@ function App({setAuthStatus}) {
   }
   return (
     <div>
-      <nav className="navbar">
-        <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"}  to="/">Home</NavLink> 
-        
-        <NavLink  className={({isActive})=>isActive ? "active-link":"nav-link"} to="/analytics">Analytics</NavLink>
-        
-        <NavLink className={({isActive})=>isActive ? "active-link":"nav-link"} to ="/logout">Logout</NavLink>
-      </nav>
-      <br></br>
+      <Navbar currPage={'Home'}/>
       <h1
       className="mt-10 text-center text-2xl/9 tracking-tight text-gray-900"
       >

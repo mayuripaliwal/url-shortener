@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import AUTH_STATUS from './authStatus';
-
+import Navbar from './Navbar';
 
 function Logout({setAuthStatus}){
     const [isLoggedOut,setIsLoggedOut]=useState(false)
@@ -47,28 +47,31 @@ function Logout({setAuthStatus}){
 
     return (
         <div>
-            <h1>Logout</h1>
+            <Navbar currPage={'Logout'}/>
+            <div>
 
             <br></br>
             {errorMessage && (
-                <p className="error-message">{errorMessage}</p>
+                <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
             )}
-            <br></br>
 
             {loading && (
-                <p>Just a moment...</p>
+                <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
             )}
 
             {isLoggedOut && (
                 <div>
-                <p style={{fontSize:"1.2rem"}}>You are now logged out.</p>
+                <p className="mt-4 text-center text-sm text-red-600">You are now logged out.</p>
                 <br></br>
-
-                <button 
-                className="click-button"
-                onClick={handleLogin}>Log Back In</button>
+                
+                <div>
+                    <button 
+                    className="click-button"
+                    onClick={handleLogin}>Log Back In</button>
+                </div>
                 </div>
             )}
+            </div>
         </div>
     )
 }
