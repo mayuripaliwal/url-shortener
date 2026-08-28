@@ -1,6 +1,6 @@
 # URL Shortener
 
-A full-stack URL Shortener built using React, FastAPI, and PostgreSQL
+A full-stack URL Shortener built using React, FastAPI, and PostgreSQL for creating, redirecting and tracking short links.
 
 ## Link
 [Try the URL Shortener](https://url-shortener-mayuri9.vercel.app)
