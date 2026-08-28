@@ -91,27 +91,44 @@ function Analytics({setAuthStatus}){
         
         { allStats.length>0 && (
             <div>
-                <h2 className="mt-4 text-center text-m text-gray-600">Track the performance of your shortened links.</h2>
+                <h2 className="mt-4 text-center text-xl text-gray-600">Track the performance of your shortened links.</h2>
                 <br></br>
                 {/*Total click count*/}
-                <div>
-                    <article className="total-clicks-card">
-                        <p>Total Clicks: {totalClickCount}</p>
-                    </article>
+                <div className="px-20">
+                    <div className="w-3/12 rounded-xl border border-gray-200 bg-white p-4 px-8 shadow-sm">
+                        <p className="text-left text-lg text-gray-600">
+                            Total Clicks
+                        </p>
+
+                        <p className="text-left mt-2 text-5xl font-semibold tracking-tight text-gray-950">
+                            {totalClickCount}
+                        </p>
+                    </div>
                 </div>
                 <br></br>
 
                 {/*all stats*/}
                 <div>
-                    <div className="analytics-table">
-                        <table>
+                    <div className="overflow-x-auto">
+                        <table className="mx-auto w-11/12 text-left">
                             <thead>
-                                <tr>
-                                    <th>Short URL</th>
-                                    <th>Original URL</th>
-                                    <th>Created</th>
-                                    <th>Last Clicked</th>
-                                    <th>Click Count</th>
+                                <tr className="border-b border-gray-200">
+                                    <th className="px-4 py-3 text-sm font-semibold text-gray-700">
+                                        Short URL
+                                    </th>
+                                    <th className="px-4 py-3 text-sm font-semibold text-gray-700">
+                                        Original URL
+                                    </th>
+                                    <th className="px-4 py-3 text-sm font-semibold text-gray-700">
+                                        Created
+                                    </th>
+                                    <th className="px-4 py-3 text-sm font-semibold text-gray-700">
+                                        Last Clicked
+                                    </th>
+                                    <th 
+                                    className="px-4 py-3 text-sm font-semibold text-gray-700">
+                                        Click Count
+                                    </th>
                                 </tr>
                             </thead>
 
@@ -122,26 +139,39 @@ function Analytics({setAuthStatus}){
                                 const statShortUrl=`${BACKEND_URL}/${code}`;
 
                                 return (
-                                    <tr key={code}>
-                                        <td>
+                                    <tr 
+                                    key={code}
+                                    
+                                    >
+                                        <td
+                                        className="px-4 py-3 text-sm font-semibold text-gray-600 hover:underline"
+                                        >
                                             <a 
                                             href={statShortUrl}
                                             target="_blank"
                                             rel="noopener noreferrer">{statShortUrl}</a>
                                         </td>
-                                        <td>
+                                        <td
+                                        className="px-4 py-3 text-sm font-semibold text-gray-600 hover:underline"
+                                        >
                                             <a
                                             href={originalUrl}
                                             target="_blank"
                                             rel="noopener noreferrer">{originalUrl}</a>
                                         </td>
-                                        <td>
+                                        <td
+                                        className="px-4 py-3 text-sm font-semibold text-gray-600"
+                                        >
                                             {formatDateTime(createdAt)}
                                         </td>
-                                        <td>
+                                        <td
+                                        className="px-4 py-3 text-sm font-semibold text-gray-600"
+                                        >
                                             {lastClickedAt?formatDateTime(lastClickedAt):"None"}
                                         </td>
-                                        <td>
+                                        <td
+                                        className="px-4 py-3 text-sm font-semibold text-gray-600"
+                                        >
                                             {clickCount}
                                         </td>
                                         

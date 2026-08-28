@@ -166,14 +166,23 @@ return (
 
         <footer className="px-6 mt-20">
         <div id="about" className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 text-sm text-gray-500 sm:flex-row lg:px-8 py-1">
-          <p>Built with ❤️ by <a href="https://github.com/mayuripaliwal"> Mayuri Paliwal</a></p>
+          <p>
+            Built with ❤️ by <a 
+              href="https://github.com/mayuripaliwal"
+              target="_blank"
+              rel="noopener"
+              className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline"
+            > 
+              Mayuri Paliwal
+            </a>
+          </p>
 
 
           <a 
             href="https://github.com/mayuripaliwal/url-shortener"
             target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
+            rel="noopener"
+            className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline"
           >
             GitHub
           </a>
