@@ -19,10 +19,10 @@ A full-stack URL Shortener built using React, FastAPI, and PostgreSQL
 ![Login page](screenshots/login.png)
 
 ### 3. Create a short URL
-![Home page](screenshots/shorten-urls.png)
+![Home page](screenshots/shorten.png)
 
 ### 4. View analytics
-![Analytics page](screenshots/url-click-analytics.png)
+![Analytics page](screenshots/analytics.png)
 
 ## Architecture Diagram
 
@@ -41,19 +41,19 @@ flowchart LR
 
 ## Tech Stack
 
-**Frontend:** React, React Router, JavaScript, Tailwind CSS
+- **Frontend:** React, React Router, JavaScript, Tailwind CSS
 
-**Backend:** Python, FastAPI
+- **Backend:** Python, FastAPI
 
-**Database:** PostgreSQL
+- **Database:** PostgreSQL
 
-**Authentication:** bcrypt, JWT
+- **Authentication:** bcrypt, JWT
 
-**Testing**: pytest, Vitest
+- **Testing**: pytest, Vitest
 
-**CI/CD:** GitHub Actions
+- **CI/CD:** GitHub Actions
 
-**Deployment:** Vercel (frontend), Render (backend), Neon (PostgreSQL)
+- **Deployment:** Vercel (frontend), Render (backend), Neon (PostgreSQL)
 
 ## Features
 - User registration and login
@@ -62,7 +62,7 @@ flowchart LR
 - Generate unique short URLs using Base62-encoded auto-increment IDs
 - Store URL mappings in PostgreSQL
 - Redirect using FastAPI `RedirectResponse`
-- View URL analytics
+- View URL analytics (Click count, Last clicked)
 
 ## API Endpoints
 
