@@ -3,7 +3,7 @@
 A full-stack URL Shortener built using React, FastAPI, and PostgreSQL for creating, redirecting and tracking short links.
 
 ## Link
-[Try the URL Shortener](https://url-shortener-mayuri9.vercel.app)
+[Try the URL Shortener](https://gettrimly.vercel.app/)
 > Note: The backend is hosted on Render and may take upto a minute
 > to wake up after a period of inactivity.
 
