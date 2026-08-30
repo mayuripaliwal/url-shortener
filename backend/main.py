@@ -67,6 +67,11 @@ def create_tables():
             "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), " \
             "last_clicked_at TIMESTAMPTZ, " \
             "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE)")
+
+            cursor.execute("CREATE TABLE IF NOT EXISTS click_events(" \
+            "click_id SERIAL PRIMARY KEY, " \
+            "click_time TIMESTAMPTZ NOT NULL, " \
+            "url_id INTEGER REFERENCES urls(url_id) ON DELETE CASCADE)")
     
             conn.commit()
     finally:
@@ -279,6 +284,24 @@ def getAllAnalytics(user_id=Depends(verify_user),conn=Depends(get_db)):
         "stats":stats
     }
 
+@app.get("/clicks/daily")
+def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
+    #1. for given user id, find click_events for past 7 days for all urls of the user id
+    #2. return click_events
+    #3. if none, return 404
+
+    click_events=get_past_7_days_clicks(user_id,conn)
+
+    if click_events is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No click events found"
+        )
+
+    return {
+        "click_events":click_events
+    }
+
 #ensure this is placed after all other API end points, 
 # since it is direct route for short_code
 #this api redirects to the long url using the short url code
@@ -384,7 +407,15 @@ def updateStats(code:str,conn:psycopg.Connection):
         cursor.execute("UPDATE urls " \
         "SET click_count=click_count+1, " \
         "last_clicked_at=NOW() " \
-        "WHERE code=%s",(code,))
+        "WHERE code=%s " \
+        "RETURNING url_id",(code,))
+
+        url_id=cursor.fetchone()[0]
+
+        cursor.execute("INSERT INTO click_events " \
+        "(click_time, url_id) " \
+        "VALUES(NOW(),%s)",(url_id,))
+
         conn.commit()
 
 def getStats(code:str,user_id:int,conn:psycopg.Connection):
@@ -552,6 +583,26 @@ def getAllStats(user_id:int,conn:psycopg.Connection):
         "FROM urls " \
         "WHERE user_id=%s " \
         "ORDER BY created_at DESC",(user_id,))
+
+        rows=cursor.fetchall()
+
+    if not rows:
+        return None
+
+    return rows
+
+def get_past_7_days_clicks(user_id:int,conn:psycopg.Connection):
+    with conn.cursor() as cursor:
+
+        cursor.execute("SELECT DATE(ce.click_time) as click_date, " \
+        "COUNT(*) as daily_click_count " \
+        "FROM click_events ce " \
+        "JOIN urls u " \
+        "ON u.url_id=ce.url_id " \
+        "WHERE u.user_id=%s " \
+        "AND ce.click_time>=NOW() - INTERVAL '7 days' " \
+        "GROUP BY DATE(ce.click_time) " \
+        "ORDER BY click_date",(user_id,))
 
         rows=cursor.fetchall()
 
