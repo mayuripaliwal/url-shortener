@@ -602,11 +602,31 @@ def get_past_7_days_clicks(user_id:int,conn:psycopg.Connection):
         "WHERE u.user_id=%s " \
         "AND ce.click_time>=NOW() - INTERVAL '7 days' " \
         "GROUP BY DATE(ce.click_time) " \
-        "ORDER BY click_date",(user_id,))
+        "ORDER BY click_date ASC",(user_id,))
 
         rows=cursor.fetchall()
 
     if not rows:
         return None
+
+    if len(rows)<8:
+        start_date=datetime.now().date()-timedelta(days=7)
+        last_date=datetime.now().date()
+
+        current_date=start_date
+
+        while(current_date<=last_date):
+            found=False
+            for row in rows:
+                if row[0]==current_date:
+                    found=True
+                    break
+
+            if not found:
+                rows.append((current_date,0))
+
+            current_date+=timedelta(days=1)
+
+        rows.sort()
 
     return rows

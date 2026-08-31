@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import AUTH_STATUS from './authStatus';
 import {useEffect} from 'react';
 import Navbar from './Navbar';
+import LineChartComponent from './LineChartComponent';
 
 function Analytics({setAuthStatus}){
     
@@ -13,6 +14,12 @@ function Analytics({setAuthStatus}){
     const [errorMessage,setErrorMessage]=useState("");
 
     const [allStats,setAllStats]=useState([]);
+
+    const [loadingClickEvents, setLoadingClickEvents]=useState(false);
+
+    const [clickEvents,setClickEvents]=useState([]);
+
+    const [clickEventsErrorMessage,setClickEventsErrorMessage]=useState("");
 
     async function handleGetStats(){
         setLoading(true);
@@ -47,6 +54,36 @@ function Analytics({setAuthStatus}){
         setLoading(false);
     }
 
+    async function handleGetClickEvents(){
+        setLoadingClickEvents(true);
+        setClickEvents([]);
+        try{
+            const response=await fetch(`${BACKEND_URL}/clicks/daily`,{
+                "method":"GET",
+                "credentials":"include"
+            })
+
+            const result=await response.json()
+
+            if (response.ok){
+                setClickEvents(result.click_events);
+            }
+            else if (response.status===404){
+                setClickEventsErrorMessage("No clicks in the last 7 days\nShare your links to start seeing click activity here.");
+            }
+            else if (response.status===401){
+                setAuthStatus(AUTH_STATUS.LOGGED_OUT);
+            }
+            else{
+                setClickEventsErrorMessage("Something went wrong");
+            }
+        }
+        catch (error){
+            setClickEventsErrorMessage("Unable to connect to the server. Please try again.");
+        }
+        setLoadingClickEvents(false);
+    }
+
     //this function converts the timestamp into a user -friendly format
     function formatDateTime(timestamp){
         const options={
@@ -63,6 +100,7 @@ function Analytics({setAuthStatus}){
 
     useEffect(()=>{
         handleGetStats();
+        handleGetClickEvents();
     },[])
 
     //compute total clicks from all the short url click counts for this user
@@ -72,6 +110,8 @@ function Analytics({setAuthStatus}){
     ){
         return total+stat[3];
     },0);
+
+    const totalLinksCreated=allStats.length
 
     return (
         <div>
@@ -86,23 +126,49 @@ function Analytics({setAuthStatus}){
                 </div>
             )}
 
-            {loading &&<p className="mt-4 text-center text-sm text-gray-600">Loading stats...</p>}           
+            {loading &&<p className="mt-4 text-center text-sm text-gray-600">Loading stats...</p>}
+            {loadingClickEvents &&<p className="mt-4 text-center text-sm text-gray-600">Loading click events...</p>}           
 
         
         { allStats.length>0 && (
             <div>
                 <h2 className="mt-4 text-center text-xl text-gray-600">Track the performance of your shortened links.</h2>
                 <br></br>
-                {/*Total click count*/}
-                <div className="px-20">
-                    <div className="w-3/12 rounded-xl border border-gray-200 bg-white p-4 px-8 shadow-sm">
-                        <p className="text-left text-lg text-gray-600">
-                            Total Clicks
-                        </p>
+                
+                <div className="flex gap-8 px-20">
+                    {/*Total click count*/}
+                    <div className="w-1/3 flex flex-col gap-8">
+                    {allStats && (
+                        <div className="w-full rounded-xl border border-gray-200 bg-white p-4 px-8 shadow-sm">
+                            <p className="text-left text-lg text-gray-600">
+                                Total Clicks
+                            </p>
 
-                        <p className="text-left mt-2 text-5xl font-semibold tracking-tight text-gray-950">
-                            {totalClickCount}
-                        </p>
+                            <p className="text-left mt-2 text-5xl font-semibold tracking-tight text-gray-950">
+                                {totalClickCount}
+                            </p>
+                        </div>
+                    )
+                    }
+                    {/*Total links created*/}
+                    {allStats && (
+                        <div className="w-full rounded-xl border border-gray-200 bg-white p-4 px-8 shadow-sm">
+                            <p className="text-left text-lg text-gray-600">
+                                Total Links Created
+                            </p>
+
+                            <p className="text-left mt-2 text-5xl font-semibold tracking-tight text-gray-950">
+                                {totalLinksCreated}
+                            </p>
+                        </div>
+                    )
+                    }
+                    </div>
+                    
+                    <div className="w-2/3">
+                    {/*Click events Past 7 days*/}
+                    {clickEventsErrorMessage && (<p className="w-full whitespace-pre-line mt-4 text-left text-sm text-gray-600">{clickEventsErrorMessage}</p>)}
+                    {clickEvents.length>0 && (<LineChartComponent data={clickEvents}/>)}
                     </div>
                 </div>
                 <br></br>
