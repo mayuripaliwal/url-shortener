@@ -8,7 +8,7 @@ client=TestClient(app)
 
 @pytest.fixture(autouse=True)
 def reset_test_state():
-    #reset rate limiter,delete user and url tables, and cookies before each test
+    #reset rate limiter,delete user, url and click_events tables, and cookies before each test
     rate_limit_store.clear()
 
     conn=psycopg.connect(
@@ -18,6 +18,7 @@ def reset_test_state():
     with conn.cursor() as cursor:
         cursor.execute("DELETE FROM URLS")
         cursor.execute("DELETE FROM USERS")
+        cursor.execute("DELETE FROM CLICK_EVENTS")
 
         conn.commit()
 
@@ -442,3 +443,51 @@ def test_get_all_stats():
     stats_user=client.get("/stats")
     
     assert stats_user.status_code==200
+
+def test_get_past_7_days_click_events():
+    register_user=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"password"
+    })
+    
+    assert register_user.status_code==200
+
+    login_user=client.post("/login",json={
+        "email":"user@example.com",
+        "password":"password"
+    })
+
+    assert login_user.status_code==200
+
+    click_events_response=client.get("/clicks/daily")
+
+    assert click_events_response.status_code==404
+
+    shorten_url=client.post("/shorten",json={
+        "url":"http://example.com"
+    })
+
+    assert shorten_url.status_code==200
+
+    shorten_data=shorten_url.json()
+
+    assert "short_url" in shorten_data
+
+    short_url=shorten_data["short_url"]
+
+    parts=short_url.split("/")
+
+    code=parts[-1]
+
+    redirect_response=client.get(f"/{code}",follow_redirects=False)
+
+    assert redirect_response.status_code==307
+
+    click_events_response_after_redirect=client.get("/clicks/daily")
+
+    assert click_events_response_after_redirect.status_code==200
+
+    click_events_data=click_events_response_after_redirect.json()
+
+    assert "click_events" in click_events_data
