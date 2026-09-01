@@ -66,7 +66,8 @@ def create_tables():
             "click_count INTEGER NOT NULL DEFAULT 0, " \
             "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), " \
             "last_clicked_at TIMESTAMPTZ, " \
-            "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE)")
+            "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, " \
+            "UNIQUE (user_id, long_url))")
 
             cursor.execute("CREATE TABLE IF NOT EXISTS click_events(" \
             "click_id SERIAL PRIMARY KEY, " \
