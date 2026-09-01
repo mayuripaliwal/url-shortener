@@ -71,8 +71,8 @@ function classNames(...classes) {
           {navigation.map((item) => (
             <DisclosureButton
               key={item.name}
-              as="a"
-              href={item.href}
+              as={NavLink}
+              to={item.linkTo}
               aria-current={item.current ? 'page' : undefined}
               className={classNames(
                 item.current ? 'bg-gray-100 text-black' : 'text-gray-100 hover:bg-gray/5 hover:text-white',
