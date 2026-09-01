@@ -2,7 +2,10 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {NavLink} from 'react-router-dom';
 import AUTH_STATUS from './authStatus';
-
+import {Link} from "react-router-dom";
+import Register from "./Register";
+import { Dialog, DialogPanel } from '@headlessui/react'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 function Login({setAuthStatus}){
     const [userEmail,setUserEmail]=useState("")
@@ -58,6 +61,15 @@ function Login({setAuthStatus}){
     }
     return (
         <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+            <header className="absolute inset-x-0 top-0 z-50">
+                    <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
+                      <div className="flex lg:flex-1">
+                        <Link to="/welcome" className="-m-1.5 p-1.5">
+                          <span className="text-2xl text-gray-900">trimly</span>
+                        </Link>
+                      </div>
+                    </nav>
+            </header>
         <div className="relative isolate bg-white">
 
             <div
@@ -119,6 +131,14 @@ function Login({setAuthStatus}){
             {isLoggedIn && (
                 <p className="mt-4 text-center text-sm text-gray-600">Logged in successfully.</p>
             )}
+            {!isLoggedIn &&
+                <p className="mt-10 text-center text-sm/6 text-gray-500">
+                    Don't have an account?{' '}
+                    <Link to="/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                    Sign Up
+                    </Link>
+                </p>
+            }
             </div>
         </div>
         </div>

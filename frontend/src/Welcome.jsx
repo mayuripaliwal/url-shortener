@@ -38,9 +38,9 @@ return (
       <header className="absolute inset-x-0 top-0 z-50">
         <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
           <div className="flex lg:flex-1">
-            <a className="-m-1.5 p-1.5">
+            <Link to="/welcome" className="-m-1.5 p-1.5">
               <span className="text-2xl text-gray-900">trimly</span>
-            </a>
+            </Link>
           </div>
           <div className="flex lg:hidden">
             <button

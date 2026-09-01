@@ -1,6 +1,6 @@
 import { Disclosure, DisclosureButton, DisclosurePanel} from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import {NavLink} from "react-router-dom";
+import {Link,NavLink} from "react-router-dom";
 
 export default function Navbar({currPage}){
 const navigation = [
@@ -27,7 +27,12 @@ function classNames(...classes) {
           </div>
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex shrink-0 items-center">
-              <span className="text-2xl text-white-900">trimly</span>
+              <Link 
+              to='/home'
+              className="text-2xl text-white-900"
+              >
+                trimly
+              </Link>
             </div>
             <div className="hidden sm:ml-6 sm:block">
 

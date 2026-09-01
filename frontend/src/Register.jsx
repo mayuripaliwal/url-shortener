@@ -70,6 +70,15 @@ function Register(){
     }
     return (
         <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+            <header className="absolute inset-x-0 top-0 z-50">
+                <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
+                    <div className="flex lg:flex-1">
+                    <Link to="/welcome" className="-m-1.5 p-1.5">
+                        <span className="text-2xl text-gray-900">trimly</span>
+                    </Link>
+                    </div>
+                </nav>
+            </header>
             <div className="relative isolate bg-white">
                 {/*background*/}
 
