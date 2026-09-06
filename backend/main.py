@@ -20,42 +20,43 @@ pool=ConnectionPool(
     conninfo=os.getenv("CONNECTION_STRING"),
     min_size=1,
     max_size=5,
+    max_idle=300,
+    check=ConnectionPool.check_connection,
     open=False
 )
 
 #create tables
 def create_tables():
-    conn=psycopg.connect(
-        os.getenv("CONNECTION_STRING")
-    )
-    try:
-        #this closes cursor automatically once this block is done executing
+    with pool.connection() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("CREATE TABLE IF NOT EXISTS users(" \
-            "user_id SERIAL PRIMARY KEY, " \
-            "email TEXT UNIQUE NOT NULL, " \
-            "user_name TEXT NOT NULL " \
-            "CHECK (char_length(user_name) BETWEEN 1 AND 30), " \
-            "password_hash TEXT NOT NULL )")
+            try:
+                #this closes cursor automatically once this block is done executing
+                with conn.cursor() as cursor:
+                    cursor.execute("CREATE TABLE IF NOT EXISTS users(" \
+                    "user_id SERIAL PRIMARY KEY, " \
+                    "email TEXT UNIQUE NOT NULL, " \
+                    "user_name TEXT NOT NULL " \
+                    "CHECK (char_length(user_name) BETWEEN 1 AND 30), " \
+                    "password_hash TEXT NOT NULL )")
 
-            cursor.execute("CREATE TABLE IF NOT EXISTS urls(" \
-            "url_id SERIAL PRIMARY KEY, " \
-            "code TEXT UNIQUE," \
-            "long_url TEXT NOT NULL," \
-            "click_count INTEGER NOT NULL DEFAULT 0, " \
-            "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), " \
-            "last_clicked_at TIMESTAMPTZ, " \
-            "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, " \
-            "UNIQUE (user_id, long_url))")
+                    cursor.execute("CREATE TABLE IF NOT EXISTS urls(" \
+                    "url_id SERIAL PRIMARY KEY, " \
+                    "code TEXT UNIQUE," \
+                    "long_url TEXT NOT NULL," \
+                    "click_count INTEGER NOT NULL DEFAULT 0, " \
+                    "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), " \
+                    "last_clicked_at TIMESTAMPTZ, " \
+                    "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, " \
+                    "UNIQUE (user_id, long_url))")
 
-            cursor.execute("CREATE TABLE IF NOT EXISTS click_events(" \
-            "click_id SERIAL PRIMARY KEY, " \
-            "click_time TIMESTAMPTZ NOT NULL, " \
-            "url_id INTEGER REFERENCES urls(url_id) ON DELETE CASCADE)")
-    
-            conn.commit()
-    finally:
-        conn.close()
+                    cursor.execute("CREATE TABLE IF NOT EXISTS click_events(" \
+                    "click_id SERIAL PRIMARY KEY, " \
+                    "click_time TIMESTAMPTZ NOT NULL, " \
+                    "url_id INTEGER REFERENCES urls(url_id) ON DELETE CASCADE)")
+            
+                    conn.commit()
+            finally:
+                conn.close()
 
 #to open connnection pool and setup database tables
 @asynccontextmanager
