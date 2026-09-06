@@ -71,6 +71,7 @@ async def lifespan(app: FastAPI):
 app=FastAPI(lifespan=lifespan)
 
 BASE_URL=os.getenv("BASE_URL")
+SHORT_URL_BASE=os.getenv("SHORT_URL_BASE")
 FRONTEND_URL=os.getenv("FRONTEND_URL")
 
 RATE_LIMIT=5
@@ -166,7 +167,7 @@ def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user),c
     if code is None:
         code=saveUrl(long_url,user_id,conn)
         
-    short_url=f"{BASE_URL}/{code}"
+    short_url=f"{SHORT_URL_BASE}/{code}"
 
     return {
         "short_url":short_url

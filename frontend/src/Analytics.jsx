@@ -8,6 +8,8 @@ import LineChartComponent from './LineChartComponent';
 function Analytics({setAuthStatus}){
     
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL;
+
+    const SHORT_URL_BASE=import.meta.env.VITE_SHORT_URL_BASE;
     
     const [loading,setLoading]=useState(false);
 
@@ -202,7 +204,7 @@ function Analytics({setAuthStatus}){
                                 {allStats.map(function(stat){
                                 const [code,originalUrl,createdAt,clickCount,lastClickedAt]=stat;
 
-                                const statShortUrl=`${BACKEND_URL}/${code}`;
+                                const statShortUrl=`${SHORT_URL_BASE}/${code}`;
 
                                 return (
                                     <tr 
