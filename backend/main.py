@@ -11,38 +11,17 @@ import jwt
 import datetime
 from datetime import timezone,timedelta,datetime
 from fastapi import Depends
+from psycopg_pool import ConnectionPool
+from contextlib import asynccontextmanager
 
-app=FastAPI()
 load_dotenv()
 
-BASE_URL=os.getenv("BASE_URL")
-FRONTEND_URL=os.getenv("FRONTEND_URL")
-
-RATE_LIMIT=5
-WINDOW_SECONDS=60
-rate_limit_store={}
-
-JWT_ALGORITHM="HS256"
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=timedelta(minutes=15)
-JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
-
-#environment for http only cookie, to use correct settings in development and production
-ENVIRONMENT=os.getenv("ENVIRONMENT")
-IS_PRODUCTION=True if ENVIRONMENT=="production" else False
-
-#validate the url 
-class validUrl(BaseModel):
-    url:HttpUrl
-#define model for user register
-class UserRegister(BaseModel):
-    email:EmailStr
-    user_name:str=Field(min_length=1,max_length=30)
-    password:str=Field(min_length=8)
-
-#define model for user login
-class UserLogin(BaseModel):
-    email:EmailStr
-    password:str=Field(min_length=8)
+pool=ConnectionPool(
+    conninfo=os.getenv("CONNECTION_STRING"),
+    min_size=1,
+    max_size=5,
+    open=False
+)
 
 #create tables
 def create_tables():
@@ -78,7 +57,48 @@ def create_tables():
     finally:
         conn.close()
 
-create_tables()
+#to open connnection pool and setup database tables
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    pool.open()
+    try:
+        create_tables()
+        yield
+    finally:
+        pool.close()
+
+app=FastAPI(lifespan=lifespan)
+
+BASE_URL=os.getenv("BASE_URL")
+FRONTEND_URL=os.getenv("FRONTEND_URL")
+
+RATE_LIMIT=5
+WINDOW_SECONDS=60
+rate_limit_store={}
+
+JWT_ALGORITHM="HS256"
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=timedelta(minutes=15)
+JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
+
+#environment for http only cookie, to use correct settings in development and production
+ENVIRONMENT=os.getenv("ENVIRONMENT")
+IS_PRODUCTION=True if ENVIRONMENT=="production" else False
+
+#validate the url 
+class validUrl(BaseModel):
+    url:HttpUrl
+#define model for user register
+class UserRegister(BaseModel):
+    email:EmailStr
+    user_name:str=Field(min_length=1,max_length=30)
+    password:str=Field(min_length=8)
+
+#define model for user login
+class UserLogin(BaseModel):
+    email:EmailStr
+    password:str=Field(min_length=8)
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -114,13 +134,8 @@ def verify_user(request:Request):
 #give it to the API calling it
 #finally, close the connection
 def get_db():
-    conn=psycopg.connect(
-        os.getenv("CONNECTION_STRING")
-    )
-    try:
+    with pool.connection() as conn:
         yield conn
-    finally:
-        conn.close()    
 
 # API end points
 @app.get('/')

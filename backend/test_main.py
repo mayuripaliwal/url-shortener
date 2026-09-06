@@ -4,28 +4,33 @@ import pytest
 import psycopg
 import os
 
-client=TestClient(app)
+@pytest.fixture(scope="session")
+def client():
+    with TestClient(app) as test_client:
+        yield test_client
 
 @pytest.fixture(autouse=True)
-def reset_test_state():
+def reset_test_state(client):
     #reset rate limiter,delete user, url and click_events tables, and cookies before each test
     rate_limit_store.clear()
+    client.cookies.clear()
 
     conn=psycopg.connect(
         os.getenv("CONNECTION_STRING")
     )
+    try:
 
-    with conn.cursor() as cursor:
-        cursor.execute("DELETE FROM URLS")
-        cursor.execute("DELETE FROM USERS")
-        cursor.execute("DELETE FROM CLICK_EVENTS")
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM URLS")
+            cursor.execute("DELETE FROM USERS")
+            cursor.execute("DELETE FROM CLICK_EVENTS")
 
-        conn.commit()
+            conn.commit()
 
-    client.cookies.clear()
-    conn.commit()
+    finally:
+        conn.close()
 
-def test_home():
+def test_home(client):
     response=client.get("/")
 
     assert response.status_code==200
@@ -34,7 +39,7 @@ def test_home():
         "message":"Backend is working"
     }
 
-def test_shorten_url():
+def test_shorten_url(client):
     #register
     register_response=client.post("/register",json={
         "email":"login@example.com",
@@ -67,7 +72,7 @@ def test_shorten_url():
 
     assert data["short_url"].startswith(f"{BASE_URL}/")
 
-def test_shorten_redirect_url():
+def test_shorten_redirect_url(client):
     #register
     register_response=client.post("/register",json={
         "email":"login@example.com",
@@ -112,7 +117,7 @@ def test_shorten_redirect_url():
 
     assert redirect_response.status_code==307
 
-def test_shorten_stats():
+def test_shorten_stats(client):
     #register
     register_response=client.post("/register",json={
         "email":"login@example.com",
@@ -163,7 +168,7 @@ def test_shorten_stats():
     assert "created_at" in stats_response_data
     assert "last_clicked_at" in stats_response_data
 
-def test_shorten_redirect_stats():
+def test_shorten_redirect_stats(client):
     #register
     register_response=client.post("/register",json={
         "email":"login@example.com",
@@ -219,7 +224,7 @@ def test_shorten_redirect_stats():
     assert "created_at" in stats_response_data
     assert "last_clicked_at" in stats_response_data
 
-def test_rate_limit():
+def test_rate_limit(client):
     #register
     register_response=client.post("/register",json={
         "email":"login@example.com",
@@ -254,7 +259,7 @@ def test_rate_limit():
 
     assert response.status_code==429
 
-def test_register_user():
+def test_register_user(client):
     register_response=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"string",
@@ -263,7 +268,7 @@ def test_register_user():
 
     assert register_response.status_code==200
 
-def test_login_user():
+def test_login_user(client):
     register_response=client.post("/register",json={
             "email":"login@example.com",
             "user_name":"string",
@@ -281,14 +286,14 @@ def test_login_user():
 
     assert "access_token" in login_response.cookies
 
-def test_authentication():
+def test_authentication(client):
     auth_response=client.post("/shorten",json={
         "url":"https://example.com"
     })
 
     assert auth_response.status_code==401
 
-def test_authorization():
+def test_authorization(client):
     #Test that 2 different users should not be able to access each other's short urls
     #Register both users
     register_user_A=client.post("/register",json={
@@ -363,7 +368,7 @@ def test_authorization():
 
     assert check_stats.status_code==404
 
-def test_logout():
+def test_logout(client):
 
     register_user=client.post("/register",json={
         "email":"user@example.com",
@@ -386,7 +391,7 @@ def test_logout():
 
     assert response.status_code==200
 
-def test_auth():
+def test_auth(client):
     register_user=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"user",
@@ -414,7 +419,7 @@ def test_auth():
     
     assert response.status_code==401
 
-def test_get_all_stats():
+def test_get_all_stats(client):
     register_user=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"user",
@@ -444,7 +449,7 @@ def test_get_all_stats():
     
     assert stats_user.status_code==200
 
-def test_get_past_7_days_click_events():
+def test_get_past_7_days_click_events(client):
     register_user=client.post("/register",json={
         "email":"user@example.com",
         "user_name":"user",
