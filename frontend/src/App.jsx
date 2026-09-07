@@ -32,6 +32,9 @@ function App(){
         else if (authResponse.status===200){
           setAuthStatus(AUTH_STATUS.LOGGED_IN);
         }
+        else{
+          setAuthStatus(AUTH_STATUS.LOGGED_OUT);
+        }
       }
       catch(error){
         setAuthStatus(AUTH_STATUS.LOGGED_OUT);
