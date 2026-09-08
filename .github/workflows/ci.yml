@@ -16,10 +16,15 @@ jobs:
                 POSTGRES_DB: postgres
             ports: 
                 - 5432:5432
+        redis:
+            image: redis:7
+            ports:
+                - 6379:6379
 
     env:
         CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/postgres
         JWT_SECRET_KEY: test-secret-key
+        REDIS_URL: redis://localhost:6379/0
 
     steps:
       - uses: actions/checkout@v4
