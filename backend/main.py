@@ -13,6 +13,7 @@ from datetime import timezone,timedelta,datetime
 from fastapi import Depends
 from psycopg_pool import ConnectionPool
 from contextlib import asynccontextmanager
+import redis
 
 load_dotenv()
 
@@ -85,6 +86,13 @@ JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY")
 #environment for http only cookie, to use correct settings in development and production
 ENVIRONMENT=os.getenv("ENVIRONMENT")
 IS_PRODUCTION=True if ENVIRONMENT=="production" else False
+
+REDIS_URL=os.getenv("REDIS_URL")
+
+redis_client=redis.Redis.from_url(
+    REDIS_URL,
+    decode_responses=True
+)
 
 #validate the url 
 class validUrl(BaseModel):
@@ -373,8 +381,24 @@ def saveUrl(long_url:str,user_id:int,conn:psycopg.Connection):
     return code
 
 
-#retrieves the long_url from storage
+#retrieves the long_url for a given short code
+#1. Check if the code exists in redis
+#2. If exists, then use it
+#3. else check db
+#4. if exist in db then add to cache and then return it
+#5. else return None
 def getLongUrl(code:str,conn:psycopg.Connection):
+    try:
+        cache_key=f"url:{code}"
+        cached_long_url=redis_client.get(cache_key)
+
+        if cached_long_url is not None:
+            return cached_long_url
+        
+    except redis.RedisError as e:
+        print(f"Redis error: {e}")
+        pass
+
     with conn.cursor() as cursor:
         cursor.execute("SELECT long_url " \
         "FROM urls " \
@@ -385,6 +409,14 @@ def getLongUrl(code:str,conn:psycopg.Connection):
     if row is None:
         return None
     
+    # add long url to cache
+    try:
+        redis_client.set(cache_key,row[0])
+        
+    except redis.RedisError as e:
+        print(f"Redis error: {e}")
+        pass
+
     return row[0]
 
 #retrieves the code for a given long url and user id
