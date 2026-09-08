@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from main import app,BASE_URL,rate_limit_store
+from main import app,BASE_URL,rate_limit_store, redis_client
 import pytest
 import psycopg
 import os
@@ -496,3 +496,11 @@ def test_get_past_7_days_click_events(client):
     click_events_data=click_events_response_after_redirect.json()
 
     assert "click_events" in click_events_data
+
+def test_redis_cache():
+    redis_client.set("url:testcode","https://example.com")
+    cached_long_url=redis_client.get("url:testcode")
+
+    assert cached_long_url=="https://example.com"
+
+    redis_client.delete("url:testcode")

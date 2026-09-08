@@ -396,7 +396,6 @@ def getLongUrl(code:str,conn:psycopg.Connection):
             return cached_long_url
         
     except redis.RedisError as e:
-        print(f"Redis error: {e}")
         pass
 
     with conn.cursor() as cursor:
@@ -412,9 +411,8 @@ def getLongUrl(code:str,conn:psycopg.Connection):
     # add long url to cache
     try:
         redis_client.set(cache_key,row[0])
-        
+
     except redis.RedisError as e:
-        print(f"Redis error: {e}")
         pass
 
     return row[0]
