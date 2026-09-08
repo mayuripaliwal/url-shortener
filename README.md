@@ -1,6 +1,6 @@
 # URL Shortener
 
-A full-stack URL Shortener built using React, FastAPI, and PostgreSQL for creating, redirecting and tracking short links.
+A full-stack URL Shortener built using React, FastAPI, PostgreSQL, and Redis for creating, redirecting and tracking short links.
 
 ## Link
 [Try the URL Shortener](https://gettrimly.vercel.app/)
@@ -32,11 +32,15 @@ flowchart LR
     React[React Frontend]
     FastAPI[FastAPI Backend]
     PostgreSQL[(PostgreSQL Database)]
+    Redis[Redis Cache]
+    External[Original Website]
 
     User --> React
     React -->|API requests| FastAPI
     FastAPI --> PostgreSQL
-    FastAPI -->|Short URL redirect| External[Original Website]
+    FastAPI -->|Short URL redirect|External
+    FastAPI -->|Short URL lookup|Redis
+    Redis -->|Cache miss|PostgreSQL
 ```
 
 ## Tech Stack
@@ -47,13 +51,15 @@ flowchart LR
 
 - **Database:** PostgreSQL
 
+- **Cache:** Redis
+
 - **Authentication:** bcrypt, JWT
 
 - **Testing**: pytest, Vitest
 
 - **CI/CD:** GitHub Actions
 
-- **Deployment:** Vercel (frontend), Render (backend), Neon (PostgreSQL)
+- **Deployment:** Vercel (frontend), Render (backend), Neon (PostgreSQL), Upstash (Redis)
 
 ## Features
 - User registration and login.
@@ -61,6 +67,7 @@ flowchart LR
 - Generate unique short URLs using Base62-encoded auto-increment IDs.
 - View URL analytics, including total clicks and last clicked time.
 - Track URL performance with daily click analytics for the last 7 days.
+- Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
 
 ## API Endpoints
 
@@ -123,3 +130,19 @@ flowchart LR
 | `url_id`|INTEGER| FOREIGN KEY| ID of the url |
 
 > `click_events.url_id` is a foreign key referencing `urls.url_id`.
+
+## Redis Cache
+
+Redis stores short code to long url mappings using string keys:
+
+```text
+url:<short_code> -> <long_url>
+```
+
+```mermaid
+flowchart LR
+    Code[url:short_code]
+    Url[long_url]
+
+    Code --> | maps to | Url
+```
