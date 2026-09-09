@@ -17,7 +17,8 @@ function App({setAuthStatus}) {
   const [errorMessage,setErrorMessage]=useState("");
 
   const [copied, setCopied]=useState(false);
-  async function  handleShortenUrl(){
+  async function  handleShortenUrl(event){
+    event.preventDefault();
     setLoading(true);
     setShortUrl("");
     setErrorMessage("");
@@ -92,60 +93,63 @@ function App({setAuthStatus}) {
         </h1>
       <br></br>
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-    <input
-    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-    type="text"
-    placeholder="Enter the link here"
-    value={url}
-    onChange={(e)=>setUrl(e.target.value)}
-    />
+        <form onSubmit={handleShortenUrl}>
+          <input
+          className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+          type="url"
+          placeholder="Enter the link here"
+          value={url}
+          onChange={(e)=>setUrl(e.target.value)}
+          required
+          />
+      
+          {errorMessage && (
+            <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
+          )}
+          <br></br>
+          <div>
+            <button 
+            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            type="submit"
+            disabled={loading}
+            >
+            {loading?'Shortening...':'Shorten URL'}
+            </button>
+          </div>
+        </form>
     
-    {errorMessage && (
-      <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
-    )}
-    {loading && (
-      <p className="mt-4 text-center text-sm text-gray-600">Generating short URL...</p>
-    )}
-    <br></br>
-    <div>
-    <button 
-    className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-    onClick={handleShortenUrl}>Shorten URL</button>
-    </div>
-    
-    
-    </div>
-    <br></br>
-    <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm"> 
-
-    {shortUrl && !loading && (
-      <div>
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <div>
-      <p className="text-sm font-medium text-gray-500">
-        Your shortened URL
-      </p>
-      <a 
-      className="mt-2 block break-all text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-      href={shortUrl}
-      target="_blank"
-      rel="noopener noreferrer"> {shortUrl}
-      </a>
       </div>
+      <br></br>
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm"> 
+
+        {shortUrl && !loading && (
+          <div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <div>
+              <p className="text-sm font-medium text-gray-500">
+                Your shortened URL
+              </p>
+              <a 
+              className="mt-2 block break-all text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+              href={shortUrl}
+              target="_blank"
+              rel="noopener noreferrer"> {shortUrl}
+              </a>
+              </div>
+            
+            </div>
+            <div>
+              <button 
+              className="mt-3 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={handleCopy}>{copied?"Copied":"Copy"}</button>
+            </div>
+          </div>
+          )
+        }
+        <br></br>
+
       
       </div>
-      <div>
-        <button 
-      className="mt-3 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-      onClick={handleCopy}>{copied?"Copied":"Copy"}</button>
-      </div>
-      </div>
-      )
-    }
-    <br></br>
-
-    
-    </div>
     </div>
 
     

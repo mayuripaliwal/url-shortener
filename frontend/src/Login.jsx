@@ -132,17 +132,15 @@ function Login({setAuthStatus}){
                     <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
                     )}
 
-                    {loading && (
-                        <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
-                    )}
-
                     <br></br>
                     {/*Sign in button */}
                     <div>
                         <button 
                         className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        type="submit">
-                        Sign In
+                        type="submit"
+                        disabled={loading}
+                        >
+                        {loading?'Signing in...':'Sign In'}
                         </button>
                     
                     </div>

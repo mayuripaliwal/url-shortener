@@ -171,11 +171,6 @@ function Register(){
                                 <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
                             )}
                         </div>
-
-                        {loading &&(
-                            <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
-                        )}
-
                         {/*Sign up button */}
 
                         {!isRegistered &&
@@ -183,7 +178,10 @@ function Register(){
                                 <button
                                 className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                 type="submit"
-                                >Sign Up</button>
+                                disabled={loading}
+                                >
+                                {loading?'Creating account...':'Sign Up'}
+                                </button>
                             </div>
                         }
                     </form>
