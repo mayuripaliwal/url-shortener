@@ -16,11 +16,18 @@ function Login({setAuthStatus}){
 
     const [loading,setLoading]=useState(false);
     const [errorMessage,setErrorMessage]=useState("");
-    async function handleLogin(){
+    async function handleLogin(event){
+        event.preventDefault();
         setErrorMessage("");
         setIsLoggedIn(false);
         setLoading(true);
         try{
+            //handle password length validation
+            if (userPassword.length <8){
+                setErrorMessage("Password must contain at least 8 characters.");
+                setLoading(false);
+                return;
+            }
             const response = await fetch(`${BACKEND_URL}/login`,{
                 method:"POST",
                 credentials:"include",
@@ -95,55 +102,63 @@ function Login({setAuthStatus}){
             Sign in to your account
             </h2>
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <div className="mt-2">
-            <input
-            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-            type="email"
-            placeholder="Enter your email"
-            value={userEmail}
-            onChange={(e)=>setUserEmail(e.target.value)}/>
-            </div>
+                <form onSubmit={handleLogin}>
+                    {/*Email input */}
+                    <div className="mt-2">
+                        <input
+                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={userEmail}
+                        onChange={(e)=>setUserEmail(e.target.value)}
+                        required
+                        />
+                    </div>
 
-            <br></br>
+                    <br></br>
+                    {/*Password input */}
+                    <input
+                    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={userPassword}
+                    onChange={(e)=>setUserPassword(e.target.value)}
+                    required
+                    />
+                    
+                    <br></br>
+                    {/*Error message */}
+                    {errorMessage && (
+                    <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
+                    )}
 
-            <input
-            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-            type="password"
-            placeholder="Enter your password"
-            value={userPassword}
-            onChange={(e)=>setUserPassword(e.target.value)}/>
-            
-            <br></br>
+                    {loading && (
+                        <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
+                    )}
 
-            {errorMessage && (
-            <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
-            )}
+                    <br></br>
+                    {/*Sign in button */}
+                    <div>
+                        <button 
+                        className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        type="submit">
+                        Sign In
+                        </button>
+                    
+                    </div>
+                </form>
 
-            <br></br>
-
-            <div>
-            <button 
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={handleLogin}>Sign In</button>
-            </div>
-
-            {loading && (
-                <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
-            )}
-
-
-
-            {isLoggedIn && (
-                <p className="mt-4 text-center text-sm text-gray-600">Logged in successfully.</p>
-            )}
-            {!isLoggedIn &&
-                <p className="mt-10 text-center text-sm/6 text-gray-500">
-                    Don't have an account?{' '}
-                    <Link to="/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
-                    Sign Up
-                    </Link>
-                </p>
-            }
+                {isLoggedIn && (
+                    <p className="mt-4 text-center text-sm text-gray-600">Logged in successfully.</p>
+                )}
+                {!isLoggedIn &&
+                    <p className="mt-10 text-center text-sm/6 text-gray-500">
+                        Don't have an account?{' '}
+                        <Link to="/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                        Sign Up
+                        </Link>
+                    </p>
+                }
             </div>
         </div>
         </div>

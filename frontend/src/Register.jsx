@@ -12,7 +12,8 @@ function Register(){
     const [loading,setLoading]=useState(false);
 
     const [errorMessage, setErrorMessage]= useState("");
-    async function handleSignUp(){
+    async function handleSignUp(event){
+        event.preventDefault();
         setErrorMessage("");
         setIsRegistered(false);
         setLoading(true);
@@ -109,82 +110,83 @@ function Register(){
                 }
         
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                    {!isRegistered &&
-                    <div className="mt-2">
-                        <label 
-                        className="mb-2 text-left block text-sm/6 font-medium text-gray-900">
-                            Username
-                        </label>
-                        <input
-                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                        type="text"
-                        placeholder="Enter your username"
-                        value={userName}
-                        onChange={(e)=>setUserName(e.target.value)}
-                        required/>
-                    </div>
-                    }
-            
-                    <br></br>
-                    {!isRegistered &&
-                        <div>
-                        <label 
-                        className="mb-2 text-left block text-sm/6 font-medium text-gray-900">
-                            Email address
-                        </label>
-                        <input
-                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={userEmail}
-                        onChange={(e)=>setUserEmail(e.target.value)}
-                        required/>
+                    <form onSubmit={handleSignUp}>
+                        {/*Input username */}
+                        {!isRegistered &&
+                        <div className="mt-2">
+                            <label 
+                            className="mb-2 text-left block text-sm/6 font-medium text-gray-900">
+                                Username
+                            </label>
+                            <input
+                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                            type="text"
+                            placeholder="Enter your username"
+                            value={userName}
+                            onChange={(e)=>setUserName(e.target.value)}
+                            required/>
+                        </div>
+                        }
+                        {/*Input email */}
                         <br></br>
-                        </div>
-                    }
-            
-
-                    {!isRegistered &&
+                        {!isRegistered &&
+                            <div>
+                                <label 
+                                className="mb-2 text-left block text-sm/6 font-medium text-gray-900">
+                                    Email address
+                                </label>
+                                <input
+                                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                                type="email"
+                                placeholder="Enter your email"
+                                value={userEmail}
+                                onChange={(e)=>setUserEmail(e.target.value)}
+                                required/>
+                                <br></br>
+                            </div>
+                        }
+                
+                        {/*Input password */}
+                        {!isRegistered &&
+                            <div>
+                                <label 
+                                className="mb-2 text-left block text-sm/6 font-medium text-gray-900">
+                                    Password
+                                </label>
+                                <input
+                                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                                type="password"
+                                placeholder="Enter your password"
+                                value={userPassword}
+                                onChange={(e)=>setUserPassword(e.target.value)}
+                                required/>
+                                <br></br>
+                            </div>
+                        }
+                
+                        {/*Error messages */}
+                
                         <div>
-                            
-                        <label 
-                        className="mb-2 text-left block text-sm/6 font-medium text-gray-900">
-                            Password
-                        </label>
-                        <input
-                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={userPassword}
-                        onChange={(e)=>setUserPassword(e.target.value)}
-                        required/>
-                        <br></br>
+                            {errorMessage && (
+                                <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
+                            )}
                         </div>
-                    }
-            
-                    
-            
-                    <div>
-                    {errorMessage && (
-                        <p className="mt-4 text-center text-sm text-red-600">{errorMessage}</p>
-                    )}
-                    </div>
 
-                    {loading &&(
-                        <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
-                    )}
+                        {loading &&(
+                            <p className="mt-4 text-center text-sm text-gray-600">Just a moment...</p>
+                        )}
 
-            
+                        {/*Sign up button */}
 
-                    {!isRegistered &&
-                        <div>
-                            <button
-                            className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                            onClick={handleSignUp}
-                            >Sign Up</button>
-                        </div>
-                    }
-            
+                        {!isRegistered &&
+                            <div>
+                                <button
+                                className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                type="submit"
+                                >Sign Up</button>
+                            </div>
+                        }
+                    </form>
                     {!isRegistered &&
                         <p className="mt-10 text-center text-sm/6 text-gray-500">
                             Already have an account?{' '}
