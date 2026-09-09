@@ -75,7 +75,6 @@ BASE_URL=os.getenv("BASE_URL")
 SHORT_URL_BASE=os.getenv("SHORT_URL_BASE")
 FRONTEND_URL=os.getenv("FRONTEND_URL")
 
-RATE_LIMIT=5
 WINDOW_SECONDS=60
 rate_limit_store={}
 
@@ -162,10 +161,12 @@ def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user),c
     #2. If short code exists for the long url and the given user id, return the short url
     #3. Else create the short code for the user id, and return the short url
 
+    rate_limit=5
+    
     long_url=str(valid_url.url)
     client_ip=request.client.host
 
-    if is_rate_limited(client_ip):
+    if is_rate_limited(client_ip,'/shorten',rate_limit):
         raise HTTPException(
             status_code=429,
             detail="Too many requests. Please try again later."
@@ -206,8 +207,21 @@ def getAnalytics(short_code:str, user_id=Depends(verify_user),conn=Depends(get_d
     }
 
 #define register endpoint
+# 1. Check if ip is rate limited
+# 2. If yes return 429
+# 3. Else if user already exists return 409
+# 4. Else add the user
 @app.post("/register")
-def registerUser(user: UserRegister,conn=Depends(get_db)):
+def registerUser(request:Request,user: UserRegister,conn=Depends(get_db)):
+    rate_limit=5
+    client_ip=request.client.host
+
+    if is_rate_limited(client_ip,'/register',rate_limit):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many requests. Please try again later."
+        )
+
     status=saveUser(user,conn)
 
     if status is True:
@@ -221,10 +235,25 @@ def registerUser(user: UserRegister,conn=Depends(get_db)):
             detail="User already exists")
     
 #define login endpoint
+#1. Check if ip is rate limited
+#2. If yes, return 429
+#3. Else, check password, if not match return 401
+#4. Else generate jwt token with expiry time and return status 200
 @app.post("/login")
-def loginUser(user:UserLogin, response: Response,conn=Depends(get_db)):
+def loginUser(user:UserLogin, response: Response,request:Request,conn=Depends(get_db)):
     email=user.email
     password=user.password
+
+    client_ip=request.client.host
+
+    rate_limit=10
+
+    if is_rate_limited(client_ip,'/login',rate_limit):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many requests. Please try again later."
+        )
+
     password_hash=findUser(email,conn)
 
     if password_hash is None:
@@ -483,16 +512,16 @@ def getStats(code:str,user_id:int,conn:psycopg.Connection):
 
     return row
 
-#protects shorten url endpoint from getting more than 5 requests within 60 seconds in the same process
-def is_rate_limited(ip):
+#protects api from getting more than rate_limit requests within 60 seconds in the same process
+def is_rate_limited(ip,api,rate_limit):
     current_time=time.time()
-    if ip not in rate_limit_store:
-        rate_limit_store[ip]={
+    if (ip,api) not in rate_limit_store:
+        rate_limit_store[(ip,api)]={
             "count":1,
             "window_start":current_time
         }
         return False
-    record=rate_limit_store[ip]
+    record=rate_limit_store[(ip,api)]
     elapsed_time=current_time-record["window_start"]
 
     if elapsed_time>=WINDOW_SECONDS:
@@ -500,7 +529,7 @@ def is_rate_limited(ip):
         record["window_start"]=current_time
         return False
 
-    if record["count"]>=RATE_LIMIT:
+    if record["count"]>=rate_limit:
         return True
     record["count"]+=1
     return False

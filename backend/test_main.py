@@ -504,3 +504,36 @@ def test_redis_cache():
     assert cached_long_url=="https://example.com"
 
     redis_client.delete("url:testcode")
+
+def test_rate_limit_per_api(client):
+    register_user=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"password"
+    })
+    
+    assert register_user.status_code==200
+
+    for i in range(4):
+        register_again=client.post("/register",json={
+            "email":"user@example.com",
+            "user_name":"user",
+            "password":"password"
+        })
+
+        assert register_again.status_code==409
+
+    register_again=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"password"
+    })
+
+    assert register_again.status_code==429
+
+    login_user=client.post("/login",json={
+        "email":"user@example.com",
+        "password":"password"
+    })
+
+    assert login_user.status_code==200
