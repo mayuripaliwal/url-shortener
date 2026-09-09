@@ -52,6 +52,9 @@ function Register(){
                 else if (response.status===409) {
                     setErrorMessage("Account already exists.");
                 }
+                else if (response.status===429){
+                    setErrorMessage("Too many requests. Please try again shortly.");
+                }
                 setLoading(false);
                 return;
             }

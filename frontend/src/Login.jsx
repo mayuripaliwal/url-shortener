@@ -41,6 +41,11 @@ function Login({setAuthStatus}){
                     setLoading(false);
                     return;
                 }
+                else if (response.status===429){
+                    setErrorMessage("Too many requests. Please try again shortly.");
+                    setLoading(false);
+                    return;
+                }
                 else{
                     setLoading(false);
                     return;
