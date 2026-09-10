@@ -14,7 +14,7 @@ from fastapi import Depends
 from psycopg_pool import ConnectionPool
 from contextlib import asynccontextmanager
 import redis
-
+from fastapi import BackgroundTasks
 load_dotenv()
 
 pool=ConnectionPool(
@@ -361,20 +361,19 @@ def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
 # since it is direct route for short_code
 #this api redirects to the long url using the short url code
 @app.get("/{short_code}")
-def redirectUrl(short_code:str,conn=Depends(get_db)):
+def redirectUrl(short_code:str,background_tasks:BackgroundTasks):
     #1. Get long url for given short code
     #2. if does not exist for the given user, return 404
     #3. update stats for given short code
     #4. return temporary redirect
-    #doesnt matter where it comes from
-    long_url=getLongUrl(short_code,conn)
+    long_url=getLongUrl(short_code)
     if long_url is None:
         raise HTTPException(
             status_code=404,
             detail="Short URL not found"
         )
 
-    updateStats(short_code,conn)
+    background_tasks.add_task(updateStats,short_code)
     return RedirectResponse(
         url=long_url,
         status_code=307)
@@ -416,7 +415,7 @@ def saveUrl(long_url:str,user_id:int,conn:psycopg.Connection):
 #3. else check db
 #4. if exist in db then add to cache and then return it
 #5. else return None
-def getLongUrl(code:str,conn:psycopg.Connection):
+def getLongUrl(code:str):
     try:
         cache_key=f"url:{code}"
         cached_long_url=redis_client.get(cache_key)
@@ -425,14 +424,16 @@ def getLongUrl(code:str,conn:psycopg.Connection):
             return cached_long_url
         
     except redis.RedisError as e:
-        pass
+        #TODO: add logging later
+        print(f"Redis error: {e}")
 
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT long_url " \
-        "FROM urls " \
-        "WHERE code=%s",(code,))
+    with pool.connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT long_url " \
+            "FROM urls " \
+            "WHERE code=%s",(code,))
 
-        row=cursor.fetchone()
+            row=cursor.fetchone()
 
     if row is None:
         return None
@@ -442,7 +443,8 @@ def getLongUrl(code:str,conn:psycopg.Connection):
         redis_client.set(cache_key,row[0])
 
     except redis.RedisError as e:
-        pass
+        #TODO: add logging later
+        print(f"Redis error: {e}")
 
     return row[0]
 
@@ -478,22 +480,28 @@ def encodeBase62(url_id:int):
 
     return answer
 
-def updateStats(code:str,conn:psycopg.Connection):
-    with conn.cursor() as cursor:
+def updateStats(code:str):
+    try:
+        with pool.connection() as conn:
+            with conn.cursor() as cursor:
 
-        cursor.execute("UPDATE urls " \
-        "SET click_count=click_count+1, " \
-        "last_clicked_at=NOW() " \
-        "WHERE code=%s " \
-        "RETURNING url_id",(code,))
+                cursor.execute("UPDATE urls " \
+                "SET click_count=click_count+1, " \
+                "last_clicked_at=NOW() " \
+                "WHERE code=%s " \
+                "RETURNING url_id",(code,))
 
-        url_id=cursor.fetchone()[0]
+                url_id=cursor.fetchone()[0]
 
-        cursor.execute("INSERT INTO click_events " \
-        "(click_time, url_id) " \
-        "VALUES(NOW(),%s)",(url_id,))
+                cursor.execute("INSERT INTO click_events " \
+                "(click_time, url_id) " \
+                "VALUES(NOW(),%s)",(url_id,))
 
-        conn.commit()
+                conn.commit()
+
+    except Exception as e:
+        #TODO: add logging later
+        print(f"Failed to update stats: {e}")
 
 def getStats(code:str,user_id:int,conn:psycopg.Connection):
     with conn.cursor() as cursor:
