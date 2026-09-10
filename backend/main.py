@@ -425,7 +425,7 @@ def getLongUrl(code:str):
         
     except redis.RedisError as e:
         #TODO: add logging later
-        print(f"Redis error: {e}")
+        pass
 
     with pool.connection() as conn:
         with conn.cursor() as cursor:
@@ -444,7 +444,7 @@ def getLongUrl(code:str):
 
     except redis.RedisError as e:
         #TODO: add logging later
-        print(f"Redis error: {e}")
+        pass
 
     return row[0]
 
@@ -501,7 +501,7 @@ def updateStats(code:str):
 
     except Exception as e:
         #TODO: add logging later
-        print(f"Failed to update stats: {e}")
+        pass
 
 def getStats(code:str,user_id:int,conn:psycopg.Connection):
     with conn.cursor() as cursor:
