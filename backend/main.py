@@ -20,7 +20,7 @@ load_dotenv()
 pool=ConnectionPool(
     conninfo=os.getenv("CONNECTION_STRING"),
     min_size=1,
-    max_size=5,
+    max_size=10,
     max_idle=300,
     check=ConnectionPool.check_connection,
     open=False
