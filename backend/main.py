@@ -373,7 +373,7 @@ def redirectUrl(short_code:str,background_tasks:BackgroundTasks):
             detail="Short URL not found"
         )
 
-    #background_tasks.add_task(updateStats,short_code)
+    background_tasks.add_task(updateStats,short_code)
     return RedirectResponse(
         url=long_url,
         status_code=307)
