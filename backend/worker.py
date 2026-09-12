@@ -5,7 +5,7 @@ import asyncio
 import sys
 
 from arq.connections import RedisSettings
-from arq.worker import Worker
+from arq.worker import Worker, create_worker
 import os
 from psycopg_pool import AsyncConnectionPool
 from dotenv import load_dotenv
@@ -20,7 +20,7 @@ if sys.platform=="win32":
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     #start background worker
-    worker=Worker(settings_cls=WorkerSettings)
+    worker=create_worker(WorkerSettings)
     app.state.worker_task=asyncio.create_task(
         worker.async_run()
     )
