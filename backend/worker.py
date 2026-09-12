@@ -1,12 +1,52 @@
 # Background worker for executing analytics updates after a URL Redirect
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 import asyncio
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+import sys
+
 from arq.connections import RedisSettings
+from arq.worker import Worker
 import os
 from psycopg_pool import AsyncConnectionPool
 from dotenv import load_dotenv
 
 load_dotenv()
+
+REDIS_URL=os.getenv("REDIS_URL")
+
+if sys.platform=="win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #start background worker
+    worker=Worker(settings_cls=WorkerSettings)
+    app.state.worker_task=asyncio.create_task(
+        worker.async_run()
+    )
+    try:
+        yield
+    finally:
+        app.state.worker_task.cancel()
+
+        try:
+            await app.state.worker_task
+        except asyncio.CancelledError:
+            pass
+
+
+app=FastAPI(lifespan=lifespan)
+
+@app.get('/healthz')
+async def health_check():
+    if app.state.worker_task.done():
+        return {
+            "status":"worker stopped"
+        }
+
+    return {
+        "status":"ok"
+    }
 
 pool=AsyncConnectionPool(
     conninfo=os.getenv("CONNECTION_STRING"),
@@ -85,5 +125,5 @@ class WorkerSettings:
     on_shutdown=shutdown
 
     redis_settings=RedisSettings.from_dsn(
-        os.getenv("REDIS_URL")
+        REDIS_URL
     )
