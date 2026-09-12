@@ -24,7 +24,7 @@ jobs:
     env:
         CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/postgres
         JWT_SECRET_KEY: test-secret-key
-        REDIS_URL: redis://localhost:6379/0
+        REDIS_URL: redis://127.0.0.1:6379/0
 
     steps:
       - uses: actions/checkout@v4

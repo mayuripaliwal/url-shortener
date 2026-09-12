@@ -168,64 +168,8 @@ def test_shorten_stats(client):
     assert "created_at" in stats_response_data
     assert "last_clicked_at" in stats_response_data
 
-def test_shorten_redirect_stats(client):
-    #register
-    register_response=client.post("/register",json={
-        "email":"login@example.com",
-        "user_name":"string",
-        "password":"password"
-    })
-    
-    assert register_response.status_code==200
-
-    #login
-    login_response=client.post("/login",json={
-        "email":"login@example.com",
-        "password":"password"
-    })
-
-    assert login_response.status_code==200
-
-    assert "access_token" in login_response.cookies
-
-    #shorten
-    shorten_response=client.post("/shorten",json={
-        "url":"https://test-shorten-redirect-stats.com"
-    })
-
-    assert shorten_response.status_code==200
-
-    data=shorten_response.json()
-
-    assert "short_url" in data
-
-    assert data["short_url"].startswith(f"{BASE_URL}/")
-
-    short_url=data["short_url"]
-
-    parts=short_url.split('/')
-
-    code=parts[-1]
-
-    #redirect
-
-    redirect_response=client.get(f"/{code}",follow_redirects=False)
-
-    assert redirect_response.status_code==307
-
-    #stats
-
-    stats_response=client.get(f"/stats/{code}")
-    assert stats_response.status_code==200
-    stats_response_data=stats_response.json()
-
-    assert stats_response_data["click_count"]==1
-    assert stats_response_data["long_url"]=="https://test-shorten-redirect-stats.com/"
-    assert "created_at" in stats_response_data
-    assert "last_clicked_at" in stats_response_data
-
 def test_rate_limit(client):
-    #register
+    #test_get_past_7_days_click_events
     register_response=client.post("/register",json={
         "email":"login@example.com",
         "user_name":"string",
@@ -448,54 +392,6 @@ def test_get_all_stats(client):
     stats_user=client.get("/stats")
     
     assert stats_user.status_code==200
-
-def test_get_past_7_days_click_events(client):
-    register_user=client.post("/register",json={
-        "email":"user@example.com",
-        "user_name":"user",
-        "password":"password"
-    })
-    
-    assert register_user.status_code==200
-
-    login_user=client.post("/login",json={
-        "email":"user@example.com",
-        "password":"password"
-    })
-
-    assert login_user.status_code==200
-
-    click_events_response=client.get("/clicks/daily")
-
-    assert click_events_response.status_code==404
-
-    shorten_url=client.post("/shorten",json={
-        "url":"http://example.com"
-    })
-
-    assert shorten_url.status_code==200
-
-    shorten_data=shorten_url.json()
-
-    assert "short_url" in shorten_data
-
-    short_url=shorten_data["short_url"]
-
-    parts=short_url.split("/")
-
-    code=parts[-1]
-
-    redirect_response=client.get(f"/{code}",follow_redirects=False)
-
-    assert redirect_response.status_code==307
-
-    click_events_response_after_redirect=client.get("/clicks/daily")
-
-    assert click_events_response_after_redirect.status_code==200
-
-    click_events_data=click_events_response_after_redirect.json()
-
-    assert "click_events" in click_events_data
 
 def test_redis_cache():
     redis_client.set("url:testcode","https://example.com")

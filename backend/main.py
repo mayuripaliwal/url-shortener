@@ -14,13 +14,15 @@ from fastapi import Depends
 from psycopg_pool import ConnectionPool
 from contextlib import asynccontextmanager
 import redis
-from fastapi import BackgroundTasks
+from arq import create_pool
+from arq.connections import RedisSettings
+from uuid import uuid4
 load_dotenv()
 
 pool=ConnectionPool(
     conninfo=os.getenv("CONNECTION_STRING"),
     min_size=1,
-    max_size=10,
+    max_size=5,
     max_idle=300,
     check=ConnectionPool.check_connection,
     open=False
@@ -53,7 +55,8 @@ def create_tables():
                     cursor.execute("CREATE TABLE IF NOT EXISTS click_events(" \
                     "click_id SERIAL PRIMARY KEY, " \
                     "click_time TIMESTAMPTZ NOT NULL, " \
-                    "url_id INTEGER REFERENCES urls(url_id) ON DELETE CASCADE)")
+                    "url_id INTEGER REFERENCES urls(url_id) ON DELETE CASCADE, " \
+                    "event_key TEXT NOT NULL UNIQUE)")
             
                     conn.commit()
             finally:
@@ -63,10 +66,14 @@ def create_tables():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     pool.open()
+    app.state.arq_pool=await create_pool(
+        RedisSettings.from_dsn(REDIS_URL)
+    )
     try:
         create_tables()
         yield
     finally:
+        await app.state.arq_pool.aclose()
         pool.close()
 
 app=FastAPI(lifespan=lifespan)
@@ -361,7 +368,7 @@ def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
 # since it is direct route for short_code
 #this api redirects to the long url using the short url code
 @app.get("/{short_code}")
-def redirectUrl(short_code:str,background_tasks:BackgroundTasks):
+async def redirectUrl(short_code:str,request:Request):
     #1. Get long url for given short code
     #2. if does not exist for the given user, return 404
     #3. update stats for given short code
@@ -373,7 +380,20 @@ def redirectUrl(short_code:str,background_tasks:BackgroundTasks):
             detail="Short URL not found"
         )
 
-    background_tasks.add_task(updateStats,short_code)
+    #serialized timestamp
+    clicked_at=datetime.now(timezone.utc).isoformat()
+    event_key=str(uuid4())
+
+    #pass db write to arq redis queue
+    #ensure idempotency using event key , if arq retries the same db write again
+    await request.app.state.arq_pool.enqueue_job(
+        "record_click",
+        short_code,
+        event_key,
+        clicked_at,
+        _job_id=event_key
+    )
+
     return RedirectResponse(
         url=long_url,
         status_code=307)
@@ -479,29 +499,6 @@ def encodeBase62(url_id:int):
     answer=answer[::-1]
 
     return answer
-
-def updateStats(code:str):
-    try:
-        with pool.connection() as conn:
-            with conn.cursor() as cursor:
-
-                cursor.execute("UPDATE urls " \
-                "SET click_count=click_count+1, " \
-                "last_clicked_at=NOW() " \
-                "WHERE code=%s " \
-                "RETURNING url_id",(code,))
-
-                url_id=cursor.fetchone()[0]
-
-                cursor.execute("INSERT INTO click_events " \
-                "(click_time, url_id) " \
-                "VALUES(NOW(),%s)",(url_id,))
-
-                conn.commit()
-
-    except Exception as e:
-        #TODO: add logging later
-        pass
 
 def getStats(code:str,user_id:int,conn:psycopg.Connection):
     with conn.cursor() as cursor:
