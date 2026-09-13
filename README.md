@@ -4,8 +4,6 @@ A full-stack URL Shortener built using React, FastAPI, PostgreSQL, and Redis for
 
 ## Link
 [Try the URL Shortener](https://gettrimly.vercel.app/)
-> Note: The backend is hosted on Render and may take upto a minute
-> to wake up after a period of inactivity.
 
 ## Demo
 
@@ -27,20 +25,28 @@ A full-stack URL Shortener built using React, FastAPI, PostgreSQL, and Redis for
 ## Architecture Diagram
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
+
     User[User Browser]
     React[React Frontend]
     FastAPI[FastAPI Backend]
+    Redis[(Redis)]
     PostgreSQL[(PostgreSQL Database)]
-    Redis[Redis Cache]
+    Worker[ARQ Worker]
     External[Original Website]
 
     User --> React
     React -->|API requests| FastAPI
-    FastAPI --> PostgreSQL
-    FastAPI -->|Short URL redirect|External
-    FastAPI -->|Short URL lookup|Redis
-    Redis -->|Cache miss|PostgreSQL
+
+    FastAPI -->|Lookup short code| Redis
+    Redis -->|Cache miss| PostgreSQL
+    PostgreSQL -->|URL mapping| FastAPI
+    FastAPI -->|HTTP Redirect| External
+
+    FastAPI -->|Queue analytics job| Redis
+    Redis -->|Job| Worker
+    Worker -->|Write analytics| PostgreSQL
 ```
 
 ## Tech Stack
@@ -59,7 +65,11 @@ flowchart LR
 
 - **CI/CD:** GitHub Actions
 
-- **Deployment:** Vercel (frontend), Render (backend), Neon (PostgreSQL), Upstash (Redis)
+- **Deployment:** Vercel (Frontend), Render (Backend, ARQ Worker), Neon (PostgreSQL), Upstash (Redis)
+
+- **Background Jobs:** ARQ with Redis
+
+> The ARQ worker runs as a Render web service, monitored through the worker's `/healthz` endpoint.
 
 ## Features
 - User registration and login.
@@ -68,6 +78,7 @@ flowchart LR
 - View URL analytics, including total clicks and last clicked time.
 - Track URL performance with daily click analytics for the last 7 days.
 - Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
+- Use ARQ with Redis to process analytics writes in the background, reducing redirect API latency by allowing redirects to return without waiting for PostgreSQL updates.
 
 ## API Endpoints
 
@@ -132,6 +143,7 @@ flowchart LR
 > `click_events.url_id` is a foreign key referencing `urls.url_id`.
 
 ## Redis Cache
+Redis caches short URL mappings. When a mapping is not cached, the backend retrieves it from PostgreSQL and then it is cached for subsequent requests.
 
 Redis stores short code to long url mappings using string keys:
 
@@ -146,3 +158,16 @@ flowchart LR
 
     Code --> | maps to | Url
 ```
+
+## Performance
+
+Indicative Locust benchmark against the deployed redirect endpoint. Each test ran for 1 minute with a spawn rate of 2 users/second. “Before Pooling” represents the implementation before PostgreSQL connection pooling was introduced; “After Pooling” uses the configured connection pool.
+
+| Concurrent Users | P95 Before Pooling | P95 After Pooling | Reduction |
+|---:|---:|---:|---:|
+| 10 | 340 ms | 150 ms | 55.9% |
+| 25 | 910 ms | 130 ms | 85.7% |
+| 50 | 4,300 ms | 140 ms | 96.7% |
+| 100 | 8,600 ms | 430 ms | 95.0% |
+
+Connection pooling significantly reduced redirect latency under concurrent load.
