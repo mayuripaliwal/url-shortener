@@ -1,4 +1,6 @@
 # URL Shortener
+[![CI](https://github.com/mayuripaliwal/url-shortener/actions/workflows/ci.yml/badge.svg)](https://github.com/mayuripaliwal/url-shortener/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A full-stack URL Shortener built using React, FastAPI, PostgreSQL, Redis, and ARQ for creating, redirecting, and tracking short links.
 
