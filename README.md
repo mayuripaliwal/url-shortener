@@ -1,6 +1,6 @@
 # URL Shortener
 
-A full-stack URL Shortener built using React, FastAPI, PostgreSQL, and Redis for creating, redirecting and tracking short links.
+A full-stack URL Shortener built using React, FastAPI, PostgreSQL, Redis, and ARQ for creating, redirecting, and tracking short links.
 
 ## Link
 [Try the URL Shortener](https://gettrimly.vercel.app/)
@@ -171,3 +171,25 @@ Indicative Locust benchmark against the deployed redirect endpoint. Each test ra
 | 100 | 8,600 ms | 430 ms | 95.0% |
 
 Connection pooling significantly reduced redirect latency under concurrent load.
+
+## Design Decisions
+
+### Base62 ID generation
+
+I chose to use Base62 encoded auto-increment ID for short URL generation to ensure that there are no collisions (which can happen when using a hash-based approach).
+
+### Redis caching
+
+To reduce redirect path latency, I used Redis to store short-code-to-URL mappings with LRU cache eviction policy.
+
+### Asynchronous analytics
+
+I moved analytics processing out of the redirect API path to a Redis queue, and used ARQ background workers to store click events in postgres. I chose ARQ because of its retry mechanism and made sure that database writes for click events are idempotent.
+
+### PostgreSQL connection pooling
+
+I used connection pooling in postgres which allows to reuse database connections,minimizing connection overhead.
+
+### In-memory rate limiting
+
+I added an in-memory rate limiter for `/shorten`, `/login` and `/register` endpoints. I chose in-memory rate limiter becasue my deployed backend currently uses a single server.
