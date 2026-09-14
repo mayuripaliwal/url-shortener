@@ -80,6 +80,41 @@ flowchart LR
 - Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
 - Use ARQ with Redis to process analytics writes in the background, reducing redirect API latency by allowing redirects to return without waiting for PostgreSQL updates.
 
+## Performance
+
+Indicative Locust benchmark against the deployed redirect endpoint. Each test ran for 1 minute with a spawn rate of 2 users/second. “Before Pooling” represents the implementation before PostgreSQL connection pooling was introduced; “After Pooling” uses the configured connection pool.
+
+| Concurrent Users | P95 Before Pooling | P95 After Pooling | Reduction |
+|---:|---:|---:|---:|
+| 10 | 340 ms | 150 ms | 55.9% |
+| 25 | 910 ms | 130 ms | 85.7% |
+| 50 | 4,300 ms | 140 ms | 96.7% |
+| 100 | 8,600 ms | 430 ms | 95.0% |
+
+Connection pooling significantly reduced redirect latency under concurrent load.
+
+## Design Decisions
+
+### Base62 ID generation
+
+I chose to use Base62 encoded auto-increment ID for short URL generation to ensure that there are no collisions (which can happen when using a hash-based approach).
+
+### Redis caching
+
+To reduce redirect path latency, I used Redis to store short-code-to-URL mappings with LRU cache eviction policy.
+
+### Asynchronous analytics
+
+I moved analytics processing out of the redirect API path to a Redis queue, and used ARQ background workers to store click events in postgres. I chose ARQ because of its retry mechanism and made sure that database writes for click events are idempotent.
+
+### PostgreSQL connection pooling
+
+I used connection pooling in postgres which allows to reuse database connections,minimizing connection overhead.
+
+### In-memory rate limiting
+
+I added an in-memory rate limiter for `/shorten`, `/login` and `/register` endpoints. I chose in-memory rate limiter becasue my deployed backend currently uses a single server.
+
 ## API Endpoints
 
 | Method | Endpoint | Authentication | Description |
@@ -158,38 +193,3 @@ flowchart LR
 
     Code --> | maps to | Url
 ```
-
-## Performance
-
-Indicative Locust benchmark against the deployed redirect endpoint. Each test ran for 1 minute with a spawn rate of 2 users/second. “Before Pooling” represents the implementation before PostgreSQL connection pooling was introduced; “After Pooling” uses the configured connection pool.
-
-| Concurrent Users | P95 Before Pooling | P95 After Pooling | Reduction |
-|---:|---:|---:|---:|
-| 10 | 340 ms | 150 ms | 55.9% |
-| 25 | 910 ms | 130 ms | 85.7% |
-| 50 | 4,300 ms | 140 ms | 96.7% |
-| 100 | 8,600 ms | 430 ms | 95.0% |
-
-Connection pooling significantly reduced redirect latency under concurrent load.
-
-## Design Decisions
-
-### Base62 ID generation
-
-I chose to use Base62 encoded auto-increment ID for short URL generation to ensure that there are no collisions (which can happen when using a hash-based approach).
-
-### Redis caching
-
-To reduce redirect path latency, I used Redis to store short-code-to-URL mappings with LRU cache eviction policy.
-
-### Asynchronous analytics
-
-I moved analytics processing out of the redirect API path to a Redis queue, and used ARQ background workers to store click events in postgres. I chose ARQ because of its retry mechanism and made sure that database writes for click events are idempotent.
-
-### PostgreSQL connection pooling
-
-I used connection pooling in postgres which allows to reuse database connections,minimizing connection overhead.
-
-### In-memory rate limiting
-
-I added an in-memory rate limiter for `/shorten`, `/login` and `/register` endpoints. I chose in-memory rate limiter becasue my deployed backend currently uses a single server.
