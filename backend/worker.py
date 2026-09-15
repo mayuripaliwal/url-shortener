@@ -1,6 +1,6 @@
 # Background worker for executing analytics updates after a URL Redirect
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI,Response
 import asyncio
 import sys
 
@@ -38,12 +38,19 @@ async def lifespan(app: FastAPI):
 app=FastAPI(lifespan=lifespan)
 
 @app.get('/healthz')
-async def health_check():
+async def health_check(response:Response):
     if app.state.worker_task.done():
+        response.status_code=503
         return {
             "status":"worker stopped"
         }
 
+    return {
+        "status":"ok"
+    }
+
+@app.get('/')
+async def home():
     return {
         "status":"ok"
     }
