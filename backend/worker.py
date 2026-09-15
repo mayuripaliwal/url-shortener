@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     #start background worker
     worker=create_worker(
         WorkerSettings,
-        poll_delay=5)
+        poll_delay=10)
     app.state.worker_task=asyncio.create_task(
         worker.async_run()
     )
