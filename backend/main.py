@@ -76,7 +76,58 @@ async def lifespan(app: FastAPI):
         await app.state.arq_pool.aclose()
         pool.close()
 
-app=FastAPI(lifespan=lifespan)
+tags_metadata = [
+    {
+        "name": "Authentication",
+        "description": "User registration, login, logout, and authentication status.",
+    },
+    {
+        "name": "URL Management",
+        "description": "Create shortened URLs and redirect to original URLs.",
+    },
+    {
+        "name": "Analytics",
+        "description": "View click statistics and URL performance.",
+    },
+    {
+        "name": "System",
+        "description": "API health and system status.",
+    },
+]
+
+servers=[
+    {
+        "url": "https://url-shortener-f3u2.onrender.com",
+        "description": "Production server",
+    },
+    {
+        "url": "http://localhost:8000",
+        "description": "Local development server",
+    },
+]
+
+app=FastAPI(
+    title="Trimly API",
+    description="""
+    REST API for Trimly, a full-stack URL shortening service.
+
+    Features:
+    - User authentication
+    - URL shortening and redirection
+    - Click analytics
+    - Asynchronous analytics processing
+    - Rate limiting
+    - Redis caching
+    """,
+    version = "1.0.0",
+    openapi_tags=tags_metadata,
+    servers=servers,
+    lifespan=lifespan,
+    swagger_ui_parameters={"tryItOutEnabled": True},
+    contact={
+        "name": "Mayuri Paliwal",
+        "url": "https://mayuri-paliwal.vercel.app/",
+    },)
 
 BASE_URL=os.getenv("BASE_URL")
 SHORT_URL_BASE=os.getenv("SHORT_URL_BASE")
@@ -101,8 +152,11 @@ redis_client=redis.Redis.from_url(
 )
 
 #validate the url 
-class validUrl(BaseModel):
-    url:HttpUrl
+class ValidURL(BaseModel):
+    url:HttpUrl=Field(
+        description="The original URL to shorten.",
+        examples=["https://www.example.com/some/long/path"],
+    )
 #define model for user register
 class UserRegister(BaseModel):
     email:EmailStr
@@ -137,7 +191,7 @@ def verify_user(request:Request):
     if token_value is None:
         raise HTTPException(
             status_code=401,
-            detail="Authentication cookie missing"
+            detail="User not logged in."
         )
 
     payload=decode_jwt_access_token(token_value)
@@ -154,7 +208,7 @@ def get_db():
         yield conn
 
 # API end points
-@app.get('/')
+@app.get('/',tags=["System"],summary="Check API health")
 def home():
     return{
         "message":"Backend is working"
@@ -162,8 +216,12 @@ def home():
 
 #this api returns a shortened url
 #Return a short url for a given long url and user id
-@app.post('/shorten')
-def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user),conn=Depends(get_db)):
+@app.post('/shorten',
+tags=["URL Management"],
+summary="Create a shortened URL",
+description="Creates a shortened URL for the authenticated user.",
+)
+def shortenUrl(request:Request,valid_url:ValidURL,user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. Check if the ip is rate limited
     #2. If short code exists for the long url and the given user id, return the short url
     #3. Else create the short code for the user id, and return the short url
@@ -190,7 +248,10 @@ def shortenUrl(request:Request,valid_url:validUrl,user_id=Depends(verify_user),c
     }
     
 #this api returns number of times a short url was clicked
-@app.get("/stats/{short_code}")
+@app.get("/stats/{short_code}",
+tags=["Analytics"],
+summary="Get analytics for a shortened URL",
+)
 def getAnalytics(short_code:str, user_id=Depends(verify_user),conn=Depends(get_db)):
     stats=getStats(short_code,user_id,conn)
 
@@ -218,7 +279,10 @@ def getAnalytics(short_code:str, user_id=Depends(verify_user),conn=Depends(get_d
 # 2. If yes return 429
 # 3. Else if user already exists return 409
 # 4. Else add the user
-@app.post("/register")
+@app.post("/register",
+tags=["Authentication"],
+summary="Register a new user",
+)
 def registerUser(request:Request,user: UserRegister,conn=Depends(get_db)):
     rate_limit=5
     client_ip=request.client.host
@@ -246,7 +310,10 @@ def registerUser(request:Request,user: UserRegister,conn=Depends(get_db)):
 #2. If yes, return 429
 #3. Else, check password, if not match return 401
 #4. Else generate jwt token with expiry time and return status 200
-@app.post("/login")
+@app.post("/login",
+tags=["Authentication"],
+summary="Log in a user",
+)
 def loginUser(user:UserLogin, response: Response,request:Request,conn=Depends(get_db)):
     email=user.email
     password=user.password
@@ -303,7 +370,10 @@ def loginUser(user:UserLogin, response: Response,request:Request,conn=Depends(ge
     }
 
 #this api deletes the cookie to log out the user
-@app.post("/logout")
+@app.post("/logout",
+tags=["Authentication"],
+summary="Log out the current user",
+)
 def logoutUser(response:Response):
 
     response.delete_cookie(
@@ -320,7 +390,10 @@ def logoutUser(response:Response):
 #this api checks if user is logged in
 #if logged in, return True
 #else verify_user returns 401
-@app.get("/auth")
+@app.get("/auth",
+tags=["Authentication"],
+summary="Check authentication status",
+)
 def isUserLoggedIn(_user_id=Depends(verify_user)):
 
     return {
@@ -329,7 +402,10 @@ def isUserLoggedIn(_user_id=Depends(verify_user)):
 
 #this api returns all records for short urls created by currently logged in user
 #if, no user logged in, verify_user returns 401
-@app.get("/stats")
+@app.get("/stats",
+tags=["Analytics"],
+summary="Get analytics for all shortened URLs",
+)
 def getAllAnalytics(user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. get all records for given user
     #2. if none, return 404
@@ -346,7 +422,10 @@ def getAllAnalytics(user_id=Depends(verify_user),conn=Depends(get_db)):
         "stats":stats
     }
 
-@app.get("/clicks/daily")
+@app.get("/clicks/daily",
+tags=["Analytics"],
+summary="Get daily click statistics",
+)
 def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. for given user id, find click_events for past 7 days for all urls of the user id
     #2. return click_events
@@ -367,7 +446,11 @@ def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
 #ensure this is placed after all other API end points, 
 # since it is direct route for short_code
 #this api redirects to the long url using the short url code
-@app.get("/{short_code}")
+@app.get("/{short_code}",
+tags=["URL Management"],
+summary="Redirect to the original URL",
+description="Redirects a short URL to its original destination and queues a click event for asynchronous processing.",
+)
 async def redirectUrl(short_code:str,request:Request):
     #1. Get long url for given short code
     #2. if does not exist for the given user, return 404
