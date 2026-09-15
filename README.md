@@ -6,7 +6,7 @@ A full-stack URL Shortener built using React, FastAPI, PostgreSQL, Redis, and AR
 
 ## Link
 [Try the URL Shortener](https://gettrimly.vercel.app/)
-
+> Note: Click analytics may take up to 10 seconds to appear. I process analytics asynchronously using an ARQ worker with a 10-second polling interval to reduce Redis usage on the free tier.
 ## Demo
 
 ### 1. Landing Page
