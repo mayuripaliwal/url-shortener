@@ -5,7 +5,7 @@ import {useEffect} from 'react';
 import Navbar from './Navbar';
 import LineChartComponent from './LineChartComponent';
 
-function Analytics({setAuthStatus}){
+function URLAnalytics({setAuthStatus}){
     
     const BACKEND_URL=import.meta.env.VITE_BACKEND_URL;
 
@@ -134,7 +134,7 @@ function Analytics({setAuthStatus}){
         
         { allStats.length>0 && (
             <div>
-                <h2 className="mt-4 text-center text-xl text-gray-600">Track the performance of your shortened links.</h2>
+                <h2 className="px-10 mt-4 text-center text-xl text-gray-600">Track the performance of your shortened links.</h2>
                 <br></br>
                 
                 <div className="flex flex-col gap-8 px-4 md:flex-row md:px-20">
@@ -261,4 +261,4 @@ function Analytics({setAuthStatus}){
     );
 }
 
-export default Analytics
+export default URLAnalytics

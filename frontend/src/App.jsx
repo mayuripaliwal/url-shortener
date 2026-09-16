@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom"
 import Home from "./Home"
-import Analytics from "./Analytics"
+import URLAnalytics from "./Analytics"
 import Register from "./Register"
 import Login from "./Login"
 import Logout from "./Logout"
@@ -9,7 +9,7 @@ import {useEffect} from 'react';
 import {Navigate} from "react-router-dom";
 import AUTH_STATUS from './authStatus';
 import Welcome from './Welcome';
-
+import { Analytics } from "@vercel/analytics/react"
 function App(){
   
 
@@ -52,12 +52,15 @@ function App(){
 
   if (authStatus===AUTH_STATUS.CHECKING){
     return (
+      <>
+      <Analytics/>
       <div className="auth-check">
+        
         <br></br>
         <h2>Just a moment...</h2>
         <p className="mt-4 text-center text-m text-gray-900">We’re checking your session and getting things ready. This may take up to a minute.</p>
       </div>
-    
+      </>
     )
   }
   //if user not logged in, show them login,sign up page
@@ -78,14 +81,17 @@ function App(){
   //if they go to login or signup, redirect them to home page
   else if (authStatus===AUTH_STATUS.LOGGED_IN) {
     return (
+      <>
+      <Analytics/>
       <Routes>
         <Route path="/" element={<Home setAuthStatus={setAuthStatus}/>} />
-        <Route path="/analytics" element={<Analytics setAuthStatus={setAuthStatus}/>}/>
+        <Route path="/analytics" element={<URLAnalytics setAuthStatus={setAuthStatus}/>}/>
         <Route path="/logout" element={<Logout setAuthStatus={setAuthStatus}/>}/>
 
         {/*redirect*/}
         <Route path="*" element={<Navigate to="/" replace/>}/>
       </Routes>
+      </>
     )
   }
   else {
