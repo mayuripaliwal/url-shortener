@@ -251,6 +251,7 @@ def shortenUrl(request:Request,valid_url:ValidURL,user_id=Depends(verify_user),c
 @app.get("/stats/{short_code}",
 tags=["Analytics"],
 summary="Get analytics for a shortened URL",
+description="Click events may take upto 10 seconds to reflect due to polling delay."
 )
 def getAnalytics(short_code:str, user_id=Depends(verify_user),conn=Depends(get_db)):
     stats=getStats(short_code,user_id,conn)
@@ -405,6 +406,7 @@ def isUserLoggedIn(_user_id=Depends(verify_user)):
 @app.get("/stats",
 tags=["Analytics"],
 summary="Get analytics for all shortened URLs",
+description="Click events may take upto 10 seconds to reflect due to polling delay."
 )
 def getAllAnalytics(user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. get all records for given user
@@ -425,6 +427,7 @@ def getAllAnalytics(user_id=Depends(verify_user),conn=Depends(get_db)):
 @app.get("/clicks/daily",
 tags=["Analytics"],
 summary="Get daily click statistics",
+description="Click events may take upto 10 seconds to reflect due to polling delay."
 )
 def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
     #1. for given user id, find click_events for past 7 days for all urls of the user id
