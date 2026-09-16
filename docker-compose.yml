@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: url_shortener
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - CONNECTION_STRING=postgresql://postgres:postgres@postgres:5432/url_shortener
+
+      - BASE_URL=http://localhost:8000
+      - FRONTEND_URL=http://localhost:5173
+
+      - JWT_SECRET_KEY=your-secret-key-here
+
+      - ENVIRONMENT=development
+
+      - SHORT_URL_BASE=http://localhost:8000
+
+      - REDIS_URL=redis://redis:6379/0
+  redis:
+    image: redis:7
+    ports: 
+      - "6379:6379"
+
+  worker:
+    build: ./backend
+    command: uvicorn worker:app --host 0.0.0.0 --port 8001
+    environment:
+      - CONNECTION_STRING=postgresql://postgres:postgres@postgres:5432/url_shortener
+      - REDIS_URL=redis://redis:6379/0
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8000
+      - VITE_SHORT_URL_BASE=http://localhost:8000

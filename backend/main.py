@@ -95,17 +95,6 @@ tags_metadata = [
     },
 ]
 
-servers=[
-    {
-        "url": "https://url-shortener-f3u2.onrender.com",
-        "description": "Production server",
-    },
-    {
-        "url": "http://localhost:8000",
-        "description": "Local development server",
-    },
-]
-
 app=FastAPI(
     title="Trimly API",
     description="""
@@ -121,7 +110,6 @@ app=FastAPI(
     """,
     version = "1.0.0",
     openapi_tags=tags_metadata,
-    servers=servers,
     lifespan=lifespan,
     swagger_ui_parameters={"tryItOutEnabled": True},
     contact={
