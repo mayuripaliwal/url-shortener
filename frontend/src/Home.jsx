@@ -74,7 +74,7 @@ function App({setAuthStatus}) {
     <div>
       <Navbar currPage={'Home'}/>
       <h1
-      className="mt-10 text-center text-2xl/9 tracking-tight text-gray-900"
+      className="sm:leading-9 mt-10 leading-7 px-5 text-center text-xl mt:text-2xl tracking-tight text-gray-900"
       >
         <TypeAnimation
           sequence={[
@@ -87,12 +87,12 @@ function App({setAuthStatus}) {
             ]}
             wrapper="span"
             speed={50}
-            style={{fontSize:'0.9em',display:"inline-block"}}
+            style={{display:"inline"}}
         />
         
         </h1>
       <br></br>
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className=" px-5 mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleShortenUrl}>
           <input
           className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"

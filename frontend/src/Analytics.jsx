@@ -137,9 +137,9 @@ function Analytics({setAuthStatus}){
                 <h2 className="mt-4 text-center text-xl text-gray-600">Track the performance of your shortened links.</h2>
                 <br></br>
                 
-                <div className="flex gap-8 px-20">
+                <div className="flex flex-col gap-8 px-4 md:flex-row md:px-20">
                     {/*Total click count*/}
-                    <div className="w-1/3 flex flex-col gap-8">
+                    <div className="w-full md:w-1/3 flex flex-col gap-8">
                     {allStats && (
                         <div className="w-full rounded-xl border border-gray-200 bg-white p-4 px-8 shadow-sm">
                             <p className="text-left text-lg text-gray-600">
@@ -167,7 +167,7 @@ function Analytics({setAuthStatus}){
                     }
                     </div>
                     
-                    <div className="w-2/3">
+                    <div className="w-full min-w-0 md:w-2/3">
                     {/*Click events Past 7 days*/}
                     {clickEventsErrorMessage && (<p className="w-full whitespace-pre-line mt-4 text-left text-sm text-gray-600">{clickEventsErrorMessage}</p>)}
                     {clickEvents.length>0 && (<LineChartComponent data={clickEvents}/>)}
