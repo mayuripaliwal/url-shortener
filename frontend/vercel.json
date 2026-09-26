@@ -2,7 +2,7 @@
     "rewrites":[
         {
             "source":"/api/:path*",
-            "destination":"https://url-shortener-f3u2.onrender.com/:path*"
+            "destination":"https://url-shortener-arq-worker-nh9t.onrender.com/:path*"
         },
         {
             "source":"/(.*)",
