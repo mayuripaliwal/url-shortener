@@ -3,6 +3,8 @@ from main import app,BASE_URL,rate_limit_store, redis_client
 import pytest
 import psycopg
 import os
+from datetime import datetime, timezone,timedelta
+from uuid import uuid4
 
 @pytest.fixture(scope="session")
 def client():
@@ -21,12 +23,90 @@ def reset_test_state(client):
     try:
 
         with conn.cursor() as cursor:
-            cursor.execute("DELETE FROM URLS")
-            cursor.execute("DELETE FROM USERS")
-            cursor.execute("DELETE FROM CLICK_EVENTS")
+            cursor.execute("TRUNCATE TABLE URLS, USERS, CLICK_EVENTS," \
+            " CLICK_EVENTS_AGGREGATE RESTART IDENTITY")
 
             conn.commit()
 
+    finally:
+        conn.close()
+
+def aggregate_click_events():
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("INSERT INTO click_events_aggregate " \
+            "(click_date, click_count,url_id) " \
+            "SELECT DATE(click_time), COUNT(*) as click_count,url_id " \
+            "FROM click_events " \
+            "WHERE click_time<CURRENT_DATE - INTERVAL '7 days' " \
+            "GROUP BY url_id, DATE(click_time) " \
+            "ON CONFLICT (click_date,url_id) DO NOTHING")
+
+            cursor.execute("DELETE FROM click_events " \
+            "WHERE click_time<CURRENT_DATE- INTERVAL '7 days'")
+
+            conn.commit()
+    
+    finally:
+        conn.close()
+
+def add_click_event(clicked_at,event_key,url_id):
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("INSERT INTO click_events " \
+            "(click_time, event_key,url_id) " \
+            "VALUES(%s,%s,%s) " \
+            "ON CONFLICT(event_key) DO NOTHING " \
+            "RETURNING click_id",
+            (clicked_at,event_key,url_id))
+
+            conn.commit()
+    finally:
+        conn.close()
+
+def check_click_events(url_id):
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM click_events "
+            "WHERE url_id=%s "
+            "AND click_time<CURRENT_DATE-INTERVAL '7 days'",
+            (url_id,))
+
+            rows=cursor.fetchall()
+
+            if not rows:
+                return True
+            else:
+                return False
+            
+    finally:
+        conn.close()
+
+def check_click_events_aggregate(url_id,count):
+    conn=psycopg.connect(
+        os.getenv("CONNECTION_STRING")
+    )
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT click_count FROM click_events_aggregate "
+            "WHERE url_id=%s ",
+            (url_id,))
+
+            row=cursor.fetchone()
+
+            if row is None or row[0]!=count:
+                return False
+            else:
+                return True
     finally:
         conn.close()
 
@@ -433,3 +513,38 @@ def test_rate_limit_per_api(client):
     })
 
     assert login_user.status_code==200
+
+def test_click_events_aggregate(client):
+    register_user=client.post("/register",json={
+        "email":"user@example.com",
+        "user_name":"user",
+        "password":"password"
+    })
+
+    assert register_user.status_code==200
+
+    login_user=client.post("/login",json={
+        "email":"user@example.com",
+        "password":"password"
+    })
+
+    assert login_user.status_code==200
+
+    #shorten
+    shorten_response=client.post("/shorten",json={
+        "url":"https://test-shorten-url.com"
+    })
+
+    assert shorten_response.status_code==200
+
+    url_id=1
+
+    #add click event manually
+    for i in range(5):
+        add_click_event(datetime.now(timezone.utc)-timedelta(days=8),str(uuid4()),url_id)
+
+    aggregate_click_events()
+
+    assert check_click_events(url_id)==True
+
+    assert check_click_events_aggregate(url_id,5)==True

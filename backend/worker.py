@@ -9,7 +9,8 @@ from arq.worker import Worker, create_worker
 import os
 from psycopg_pool import AsyncConnectionPool
 from dotenv import load_dotenv
-
+from arq.cron import cron
+import psycopg
 load_dotenv()
 
 REDIS_URL=os.getenv("REDIS_URL")
@@ -122,6 +123,27 @@ async def record_click(ctx,short_code,event_key,clicked_at):
         #TODO: add logging later
         raise
 
+async def aggregate_click_events(ctx):
+    try:
+        async with pool.connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("INSERT INTO click_events_aggregate " \
+                "(click_date, click_count,url_id) " \
+                "SELECT DATE(click_time), COUNT(*) as click_count,url_id " \
+                "FROM click_events " \
+                "WHERE click_time<CURRENT_DATE - INTERVAL '7 days' " \
+                "GROUP BY url_id, DATE(click_time) " \
+                "ON CONFLICT (click_date,url_id) DO NOTHING")
+
+                await cursor.execute("DELETE FROM click_events " \
+                "WHERE click_time<CURRENT_DATE- INTERVAL '7 days'")
+
+                await conn.commit()
+    
+    except Exception as e:
+        #TODO: add logging later
+        raise
+
 async def startup(ctx):
     await pool.open()
 
@@ -136,3 +158,4 @@ class WorkerSettings:
     redis_settings=RedisSettings.from_dsn(
         REDIS_URL
     )
+    cron_jobs=[cron(aggregate_click_events,hour=7,minute=37,max_tries=1)]

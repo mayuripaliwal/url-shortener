@@ -57,6 +57,13 @@ def create_tables():
                     "click_time TIMESTAMPTZ NOT NULL, " \
                     "url_id INTEGER REFERENCES urls(url_id) ON DELETE CASCADE, " \
                     "event_key TEXT NOT NULL UNIQUE)")
+
+                    cursor.execute("CREATE TABLE IF NOT EXISTS click_events_aggregate (" \
+                    "aggregate_id SERIAL PRIMARY KEY, " \
+                    "click_date DATE NOT NULL, " \
+                    "click_count INTEGER NOT NULL, " \
+                    "url_id INTEGER NOT NULL REFERENCES urls(url_id) ON DELETE CASCADE, " \
+                    "UNIQUE(click_date, url_id) )")
             
                     conn.commit()
             finally:
