@@ -158,4 +158,4 @@ class WorkerSettings:
     redis_settings=RedisSettings.from_dsn(
         REDIS_URL
     )
-    cron_jobs=[cron(aggregate_click_events,minute=None,max_tries=1)]
+    cron_jobs=[cron(aggregate_click_events,hour=7,minute=37,max_tries=1)]
