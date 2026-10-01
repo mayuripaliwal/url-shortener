@@ -96,6 +96,8 @@ flowchart LR
     FastAPI -->|Queue analytics job| Redis
     Redis -->|Job| Worker
     Worker -->|Write analytics| PostgreSQL
+
+    Worker -.->|Daily cron: aggregate events older than 7 days|PostgreSQL
 ```
 
 ## Tech Stack
@@ -128,6 +130,7 @@ flowchart LR
 - Track URL performance with daily click analytics for the last 7 days.
 - Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
 - Use ARQ with Redis to process analytics writes in the background, reducing redirect API latency by allowing redirects to return without waiting for PostgreSQL updates.
+- Click events are aggregated after 7 days through a ARQ cron job that runs every 24 hours.
 
 ## Performance
 
@@ -163,6 +166,10 @@ I used connection pooling in postgres which allows to reuse database connections
 ### In-memory rate limiting
 
 I added an in-memory rate limiter for `/shorten`, `/login` and `/register` endpoints. I chose in-memory rate limiter becasue my deployed backend currently uses a single server.
+
+### Click events Aggregation
+
+I added a cron job that runs every 24 hours to aggregate click events that are older than 7 days by date to reduce database storage. This way, the past 7 days click events details are retained for analytics.
 
 ## API Endpoints
 
@@ -225,6 +232,17 @@ flowchart LR
 | `url_id`|INTEGER| FOREIGN KEY| ID of the url |
 
 > `click_events.url_id` is a foreign key referencing `urls.url_id`.
+
+### `click_events_aggregate`
+
+| Column |Type|Constraints| Description |
+|---|---|---|---|
+| `aggregate_id` |INTEGER|PRIMARY KEY| Unique identifier for the aggregate click event |
+| `click_date` |DATE|NOT NULL| Date of those clicks |
+| `click_count`|INTEGER| NOT NULL| Aggregated click count for the URL on a date |
+| `url_id`|INTEGER| FOREIGN KEY| ID of the url |
+
+> Other constraints: UNIQUE (click_date, url_id) to prevent duplicate aggregate events.
 
 ## Redis Cache
 Redis caches short URL mappings. When a mapping is not cached, the backend retrieves it from PostgreSQL and then it is cached for subsequent requests.
