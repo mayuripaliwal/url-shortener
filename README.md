@@ -19,7 +19,7 @@ A full-stack URL Shortener built using React, FastAPI, PostgreSQL, Redis, and AR
 ![Login page](screenshots/login.png)
 
 ### 3. Create a short URL
-![Home page](screenshots/shorten.png)
+![Home page](screenshots/shorten-url.png)
 
 ### 4. View analytics
 ![Analytics page](screenshots/analytics.png)
