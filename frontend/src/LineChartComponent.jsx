@@ -16,7 +16,7 @@ function LineChartComponent ({data}){
           <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
             <XAxis dataKey="Date" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} allowDecimals={false}/>
             <Tooltip 
               contentStyle={{ backgroundColor: 'white', borderRadius: '8px', border: '0.5px solid #d2d4d8' }}
               labelStyle={{ color: '#9CA3AF' }}
