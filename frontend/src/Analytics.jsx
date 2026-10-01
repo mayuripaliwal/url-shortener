@@ -23,6 +23,14 @@ function URLAnalytics({setAuthStatus}){
 
     const [clickEventsErrorMessage,setClickEventsErrorMessage]=useState("");
 
+    const [range,setRange]=useState("7d");
+
+    const [loadingClickEventsPast24Hours,setLoadingClickEventsPast24Hours]=useState(false);
+
+    const [clickEventsPast24Hours,setClickEventsPast24Hours]=useState([]);
+
+    const [clickEventsPast24HoursErrorMessage,setClickEventsPast24HoursErrorMessage]=useState("");
+
     async function handleGetStats(){
         setLoading(true);
         //handle network errors
@@ -70,9 +78,6 @@ function URLAnalytics({setAuthStatus}){
             if (response.ok){
                 setClickEvents(result.click_events);
             }
-            else if (response.status===404){
-                setClickEventsErrorMessage("No clicks in the last 7 days\nShare your links to start seeing click activity here.");
-            }
             else if (response.status===401){
                 setAuthStatus(AUTH_STATUS.LOGGED_OUT);
             }
@@ -84,6 +89,37 @@ function URLAnalytics({setAuthStatus}){
             setClickEventsErrorMessage("Unable to connect to the server. Please try again.");
         }
         setLoadingClickEvents(false);
+    }
+
+    async function handleGetClickEventsPast24Hours(){
+        setClickEventsPast24Hours([]);
+        setLoadingClickEventsPast24Hours(true);
+        setClickEventsPast24HoursErrorMessage("");
+        try{
+            const response= await fetch(`${BACKEND_URL}/clicks/hourly`,{
+                "method":"GET",
+                "credentials":"include"
+            })
+
+            if (!response.ok){
+                if (response.status===401){
+                    setAuthStatus(AUTH_STATUS.LOGGED_OUT);
+                }
+                else{
+                    setClickEventsPast24HoursErrorMessage("Something went wrong. Please try again.");
+                }
+            }
+            
+            const result=await response.json()
+
+            setClickEventsPast24Hours(result.data);
+        }
+        catch(e){
+            setClickEventsPast24HoursErrorMessage("Unable to connect to the server. Please try again.");
+        }
+        finally{
+            setLoadingClickEventsPast24Hours(false);
+        }
     }
 
     //this function converts the timestamp into a user -friendly format
@@ -103,6 +139,7 @@ function URLAnalytics({setAuthStatus}){
     useEffect(()=>{
         handleGetStats();
         handleGetClickEvents();
+        handleGetClickEventsPast24Hours();
     },[])
 
     //compute total clicks from all the short url click counts for this user
@@ -129,7 +166,8 @@ function URLAnalytics({setAuthStatus}){
             )}
 
             {loading &&<p className="mt-4 text-center text-sm text-gray-600">Loading stats...</p>}
-            {loadingClickEvents &&<p className="mt-4 text-center text-sm text-gray-600">Loading click events...</p>}           
+            {loadingClickEvents &&<p className="mt-4 text-center text-sm text-gray-600">Loading click events for past 7 days...</p>}           
+            {loadingClickEventsPast24Hours &&<p className="mt-4 text-center text-sm text-gray-600">Loading click events for past 24 hours...</p>}           
 
         
         { allStats.length>0 && (
@@ -168,9 +206,31 @@ function URLAnalytics({setAuthStatus}){
                     </div>
                     
                     <div className="w-full min-w-0 md:w-2/3">
-                    {/*Click events Past 7 days*/}
+                    {/*Click events - (past 7 days, past 24 hours)*/}
                     {clickEventsErrorMessage && (<p className="w-full whitespace-pre-line mt-4 text-left text-sm text-gray-600">{clickEventsErrorMessage}</p>)}
-                    {clickEvents.length>0 && (<LineChartComponent data={clickEvents}/>)}
+                    {clickEventsPast24HoursErrorMessage && (<p className="w-full whitespace-pre-line mt-4 text-left text-sm text-gray-600">{clickEventsPast24HoursErrorMessage}</p>)}
+                    <div
+                    className="flex justify-end mb-2"
+                    >
+                        <select 
+                            id="chart-view-dropdown"
+                            className="bg-gray-100 text-gray-900"
+                            value={range}
+                            onChange={(e)=>setRange(e.target.value)}
+                        >
+                            <option
+                                value="24h"
+                            >
+                                Past 24 hours
+                            </option>
+                            <option
+                                value="7d"
+                            >
+                                Past 7 days
+                            </option>
+                        </select>
+                    </div>
+                    <LineChartComponent data7Days={clickEvents} data24Hours={clickEventsPast24Hours} type={range}/>
                     </div>
                 </div>
                 <br></br>
@@ -178,6 +238,11 @@ function URLAnalytics({setAuthStatus}){
                 {/*all stats*/}
                 <div>
                     <div className="overflow-x-auto">
+                        <p
+                        className="mx-auto w-11/12 mb-2 text-left text-xl text-gray-900"
+                        >
+                            Links
+                        </p>
                         <table className="mx-auto w-11/12 text-left">
                             <thead>
                                 <tr className="border-b border-gray-200">

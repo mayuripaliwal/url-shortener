@@ -431,14 +431,22 @@ def getClicksOverTime(user_id=Depends(verify_user),conn=Depends(get_db)):
 
     click_events=get_past_7_days_clicks(user_id,conn)
 
-    if click_events is None:
-        raise HTTPException(
-            status_code=404,
-            detail="No click events found"
-        )
-
     return {
         "click_events":click_events
+    }
+
+#this api fetches the hourly click count for past 24 hours
+@app.get("/clicks/hourly",
+tags=["Analytics"],
+summary="Get hourly click statistics for past 24 hours",
+description="Click events may take upto 10 seconds to reflect due to polling delay."
+)
+def getClicksPast24Hours(user_id=Depends(verify_user),conn=Depends(get_db)):
+    click_events=get_past_24_hours_clicks(user_id,conn)
+
+    return {
+        "success":True,
+        "data":click_events
     }
 
 #ensure this is placed after all other API end points, 
@@ -757,39 +765,66 @@ def getAllStats(user_id:int,conn:psycopg.Connection):
 def get_past_7_days_clicks(user_id:int,conn:psycopg.Connection):
     with conn.cursor() as cursor:
 
-        cursor.execute("SELECT DATE(ce.click_time) as click_date, " \
-        "COUNT(*) as daily_click_count " \
-        "FROM click_events ce " \
-        "JOIN urls u " \
-        "ON u.url_id=ce.url_id " \
-        "WHERE u.user_id=%s " \
-        "AND ce.click_time>=NOW() - INTERVAL '7 days' " \
-        "GROUP BY DATE(ce.click_time) " \
-        "ORDER BY click_date ASC",(user_id,))
+        cursor.execute("""
+        with dates as(
+            select generate_series(
+                DATE_TRUNC('day',NOW()) - INTERVAL '6 days',
+                DATE_TRUNC('day',NOW()),
+                INTERVAL '1 day'
+            ) as date
+        ) ,
+        click_dates as (
+            SELECT DATE_TRUNC('day',ce.click_time) as click_date,
+            COUNT(*) as daily_click_count
+            FROM click_events ce 
+            JOIN urls u
+            ON u.url_id=ce.url_id
+            WHERE u.user_id=%s
+            AND ce.click_time>=DATE_TRUNC('day',NOW()) - INTERVAL '6 days'
+            GROUP BY DATE_TRUNC('day',ce.click_time)
+            ORDER BY click_date ASC
+        )
+
+        select d.date, coalesce(cd.daily_click_count,0) as clicks
+        from dates d
+        left join click_dates cd
+        on d.date=cd.click_date
+        order by d.date ASC
+        """
+        ,(user_id,))
 
         rows=cursor.fetchall()
 
-    if not rows:
-        return None
-
-    if len(rows)<8:
-        start_date=datetime.now().date()-timedelta(days=7)
-        last_date=datetime.now().date()
-
-        current_date=start_date
-
-        while(current_date<=last_date):
-            found=False
-            for row in rows:
-                if row[0]==current_date:
-                    found=True
-                    break
-
-            if not found:
-                rows.append((current_date,0))
-
-            current_date+=timedelta(days=1)
-
-        rows.sort()
-
     return rows
+
+def get_past_24_hours_clicks(user_id:int, conn:psycopg.Connection):
+    with conn.cursor() as cursor:
+        cursor.execute("""
+        with hours as(
+        select generate_series(
+            date_trunc('hour',now())- interval '23 hours',
+            date_trunc('hour',now()),
+            INTERVAL '1 hour'
+        ) as hour), 
+
+        click_count as (
+        select date_trunc('hour',ce.click_time) as hour,
+        count(*) as click_count
+        from click_events ce
+        join urls u
+        on ce.url_id=u.url_id
+        where ce.click_time >=date_trunc('hour',now())-interval '23 hours'
+        AND u.user_id=%s
+        group by (date_trunc('hour',ce.click_time))
+        ) 
+
+        select h.hour as hour, coalesce(cc.click_count,0) as clicks
+        from click_count cc
+        right join hours h
+        on cc.hour=h.hour
+        order by h.hour ASC
+        """,(user_id,))
+
+        rows=cursor.fetchall()
+        
+        return rows
