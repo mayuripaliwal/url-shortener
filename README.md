@@ -22,7 +22,7 @@ A full-stack URL Shortener built using React, FastAPI, PostgreSQL, Redis, and AR
 ![Home page](screenshots/shorten.png)
 
 ### 4. View analytics
-![Analytics page](screenshots/url-analytics.png)
+![Analytics page](screenshots/analytics.png)
 
 ## Run with Docker
 
@@ -127,7 +127,7 @@ flowchart LR
 - JWT-based authentication.
 - Generate unique short URLs using Base62-encoded auto-increment IDs.
 - View URL analytics, including total clicks and last clicked time.
-- Track URL performance with daily click analytics for the last 7 days.
+- Track URL performance with daily click analytics for the last 7 days and hourly click analytics for the past 24 hours.
 - Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
 - Use ARQ with Redis to process analytics writes in the background, reducing redirect API latency by allowing redirects to return without waiting for PostgreSQL updates.
 - Click events are aggregated after 7 days through a ARQ cron job that runs every 24 hours.
@@ -182,7 +182,8 @@ I added a cron job that runs every 24 hours to aggregate click events that are o
 | `GET` | `/stats/{code}` | Yes | Retrieve analytics for a shortened URL |
 | `GET` | `/auth` | Yes | Check is user logged in or not |
 | `GET` | `/stats`| Yes | Retrieve all analytics for a given user ID |
-| `GET` | `/clicks/daily` | Yes | Retrieve daily click count across all URLs for past 7 days (~168 hours)
+| `GET` | `/clicks/daily` | Yes | Retrieve daily click count across all URLs for past 7 calendar days|
+| `GET` | `/clicks/hourly` | Yes | Retrieve hourly click count across all URLs for past 24 hours|
 
 ## Database Schema
 
