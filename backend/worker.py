@@ -128,6 +128,9 @@ async def record_click(ctx,short_code,event_key,clicked_at):
 
                 await conn.commit()
 
+
+        logger.info("Recording click: short_code=%s, event_jey=%s",short_code, event_key)
+
     except Exception:
         logger.exception("Failed to record click event: short_code=%s, event_key=%s",short_code,event_key)
         raise Retry(defer=5)
@@ -148,6 +151,8 @@ async def aggregate_click_events(ctx):
                 "WHERE click_time<CURRENT_DATE- INTERVAL '7 days'")
 
                 await conn.commit()
+
+        logger.info("Aggregating click events...")
     
     except Exception:
         logger.exception("Failed to aggregate click events")
