@@ -19,7 +19,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s"
 )
 logger=logging.getLogger(__name__)
-
+logger.info("Worker Started")
 load_dotenv()
 
 REDIS_URL=os.getenv("REDIS_URL")
