@@ -25,3 +25,6 @@ frontend/dist/
 *.db
 locustfile.py
 
+#pytest cov
+.coverage
+coverage.xml
