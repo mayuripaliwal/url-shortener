@@ -231,6 +231,7 @@ flowchart LR
 | `click_id` |INTEGER|PRIMARY KEY| Unique identifier for the click event |
 | `click_time` |TIMESTAMPTZ|NOT NULL| Click timestamp |
 | `url_id`|INTEGER| FOREIGN KEY| ID of the url |
+| `event_key`|TEXT| NOT NULL UNIQUE|UUID4 key that uniquely identifies a click event job enqueued for analytics update| 
 
 > `click_events.url_id` is a foreign key referencing `urls.url_id`.
 
