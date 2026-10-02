@@ -11,9 +11,10 @@ import jwt
 import datetime
 from datetime import timezone,timedelta,datetime
 from fastapi import Depends
-from psycopg_pool import ConnectionPool
+from psycopg_pool import ConnectionPool, AsyncConnectionPool
 from contextlib import asynccontextmanager
 import redis
+import redis.asyncio
 from arq import create_pool
 from arq.connections import RedisSettings
 from uuid import uuid4
@@ -36,6 +37,14 @@ pool=ConnectionPool(
     open=False
 )
 
+async_pool=AsyncConnectionPool(
+    conninfo=os.getenv("CONNECTION_STRING"),
+    min_size=1,
+    max_size=5,
+    max_idle=300,
+    check=AsyncConnectionPool.check_connection,
+    open=False
+)
 #create tables
 def create_tables():
     with pool.connection() as conn:
@@ -81,6 +90,7 @@ def create_tables():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     pool.open()
+    await async_pool.open()
     app.state.arq_pool=await create_pool(
         RedisSettings.from_dsn(REDIS_URL)
     )
@@ -90,6 +100,7 @@ async def lifespan(app: FastAPI):
     finally:
         await app.state.arq_pool.aclose()
         pool.close()
+        await async_pool.close()
 
 tags_metadata = [
     {
@@ -150,6 +161,11 @@ IS_PRODUCTION=True if ENVIRONMENT=="production" else False
 REDIS_URL=os.getenv("REDIS_URL")
 
 redis_client=redis.Redis.from_url(
+    REDIS_URL,
+    decode_responses=True
+)
+
+async_redis_client=redis.asyncio.Redis.from_url(
     REDIS_URL,
     decode_responses=True
 )
@@ -469,7 +485,7 @@ async def redirectUrl(short_code:str,request:Request):
     #2. if does not exist for the given user, return 404
     #3. update stats for given short code
     #4. return temporary redirect
-    long_url=getLongUrl(short_code)
+    long_url=await getLongUrl(short_code)
     if long_url is None:
         raise HTTPException(
             status_code=404,
@@ -531,10 +547,10 @@ def saveUrl(long_url:str,user_id:int,conn:psycopg.Connection):
 #3. else check db
 #4. if exist in db then add to cache and then return it
 #5. else return None
-def getLongUrl(code:str):
+async def getLongUrl(code:str):
     try:
         cache_key=f"url:{code}"
-        cached_long_url=redis_client.get(cache_key)
+        cached_long_url=await async_redis_client.get(cache_key)
 
         if cached_long_url is not None:
             return cached_long_url
@@ -543,20 +559,20 @@ def getLongUrl(code:str):
         logger.exception("Redis cache lookup failed: short_code=%s",code)
         pass
 
-    with pool.connection() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT long_url " \
+    async with async_pool.connection() as async_conn:
+        async with async_conn.cursor() as cursor:
+            await cursor.execute("SELECT long_url " \
             "FROM urls " \
             "WHERE code=%s",(code,))
 
-            row=cursor.fetchone()
+            row=await cursor.fetchone()
 
     if row is None:
         return None
     
     # add long url to cache
     try:
-        redis_client.set(cache_key,row[0])
+        await async_redis_client.set(cache_key,row[0])
 
     except redis.RedisError:
         logger.exception("Redis cache write failed: short_code=%s",code)
