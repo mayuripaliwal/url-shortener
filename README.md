@@ -123,14 +123,12 @@ flowchart LR
 > The ARQ worker runs as a Render web service, monitored through the worker's `/healthz` endpoint.
 
 ## Features
-- User registration and login.
-- JWT-based authentication.
-- Generate unique short URLs using Base62-encoded auto-increment IDs.
-- View URL analytics, including total clicks and last clicked time.
-- Track URL performance with daily click analytics for the last 7 days and hourly click analytics for the past 24 hours.
-- Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
-- Use ARQ with Redis to process analytics writes in the background, reducing redirect API latency by allowing redirects to return without waiting for PostgreSQL updates.
-- Click events are aggregated after 7 days through a ARQ cron job that runs every 24 hours.
+- **URL Analytics:** View URL analytics, including total clicks and last clicked time.
+- **Time Based Analytics:** Track URL performance with daily click analytics for the last 7 days and hourly click analytics for the past 24 hours.
+- **Redis Caching:** Cache URL mappings in Redis to reduce repeated PostgreSQL lookups
+- **Asynchronous Analytics:** Use ARQ with Redis to process analytics writes in the background, reducing redirect API latency by allowing redirects to return without waiting for PostgreSQL updates.
+- **Click events Aggregation:** Click events are aggregated after 7 days through an ARQ cron job that runs every 24 hours.
+- **Exception Logging:** Logging for exceptions related to Redis cache and background jobs
 
 ## Performance
 
@@ -187,7 +185,7 @@ I added a cron job that runs every 24 hours to aggregate click events that are o
 
 ## Database Schema
 
-The application uses PostgreSQL with 3 tables:
+The application uses PostgreSQL with 4 tables:
 
 > Each user can own multiple shortened URLs, while each shortened URL belongs to a single user
 
