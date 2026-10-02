@@ -11,6 +11,15 @@ from psycopg_pool import AsyncConnectionPool
 from dotenv import load_dotenv
 from arq.cron import cron
 import psycopg
+import logging
+from arq import Retry
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s"
+)
+logger=logging.getLogger(__name__)
+
 load_dotenv()
 
 REDIS_URL=os.getenv("REDIS_URL")
@@ -119,9 +128,9 @@ async def record_click(ctx,short_code,event_key,clicked_at):
 
                 await conn.commit()
 
-    except Exception as e:
-        #TODO: add logging later
-        raise
+    except Exception:
+        logger.exception("Failed to record click event: short_code=%s, event_key=%s",short_code,event_key)
+        raise Retry(defer=5)
 
 async def aggregate_click_events(ctx):
     try:
@@ -140,8 +149,8 @@ async def aggregate_click_events(ctx):
 
                 await conn.commit()
     
-    except Exception as e:
-        #TODO: add logging later
+    except Exception:
+        logger.exception("Failed to aggregate click events")
         raise
 
 async def startup(ctx):

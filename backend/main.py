@@ -327,7 +327,6 @@ def loginUser(user:UserLogin, response: Response,request:Request,conn=Depends(ge
     password_hash=findUser(email,conn)
 
     if password_hash is None:
-        #TODO: handle return
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
