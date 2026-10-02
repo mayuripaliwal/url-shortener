@@ -17,6 +17,14 @@ import redis
 from arq import create_pool
 from arq.connections import RedisSettings
 from uuid import uuid4
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s"
+    )
+logger=logging.getLogger(__name__)
+
 load_dotenv()
 
 pool=ConnectionPool(
@@ -531,8 +539,8 @@ def getLongUrl(code:str):
         if cached_long_url is not None:
             return cached_long_url
         
-    except redis.RedisError as e:
-        #TODO: add logging later
+    except redis.RedisError:
+        logger.exception("Redis cache lookup failed: short_code=%s",code)
         pass
 
     with pool.connection() as conn:
@@ -550,8 +558,8 @@ def getLongUrl(code:str):
     try:
         redis_client.set(cache_key,row[0])
 
-    except redis.RedisError as e:
-        #TODO: add logging later
+    except redis.RedisError:
+        logger.exception("Redis cache write failed: short_code=%s",code)
         pass
 
     return row[0]
