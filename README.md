@@ -26,34 +26,34 @@ A full-stack URL Shortener built using React, FastAPI, PostgreSQL, Redis, and AR
 
 ## Run with Docker
 
-Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed.
+1. Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is **installed and running**.
 
-Clone the repository:
+2. Clone the repository:
 
 ```bash
 git clone https://github.com/mayuripaliwal/url-shortener.git
 cd url-shortener
 ```
 
-Start the application:
+3. Start the application:
 
 ```bash
 docker compose up --build
 ```
 
-Once the containers are running, open the frontend at:
+4. Once the containers are running, open the frontend at:
 
 ```text
 http://localhost:5173
 ```
 
-API docs can be viewed at:
+5. API docs can be viewed at:
 
 ```text
 http://localhost:8000/docs
 ```
 
-Docker Compose starts the complete application stack:
+6. Docker Compose starts the complete application stack:
 
 * React + Vite frontend
 * FastAPI backend
@@ -64,7 +64,7 @@ Docker Compose starts the complete application stack:
 > For deployment, I configured ARQ to use polling_delay of 10 seconds to reduce Redis commands usage.
 > When running locally, you can change `poll_delay` in `worker.py` to `0.5 seconds` (ARQ's default) for faster analytics updates.
 
-To stop the application:
+7. To stop the application:
 
 ```bash
 docker compose down
