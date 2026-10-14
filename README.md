@@ -183,6 +183,33 @@ I added a cron job that runs every 24 hours to aggregate click events that are o
 | `GET` | `/clicks/daily` | Yes | Retrieve daily click count across all URLs for past 7 calendar days|
 | `GET` | `/clicks/hourly` | Yes | Retrieve hourly click count across all URLs for past 24 hours|
 
+## API Examples
+
+### 1. Create a short URL:
+
+Creates a shortened URL for a given long URL for an authenticated user.
+
+ Request
+ ```
+ POST /shorten
+ Content-Type: application/json
+ Cookie: access_token=<your_jwt_token>
+ ```
+
+ Request body
+ ```
+ {
+    "url":"https://example.com/song/long/path"
+ }
+ ```
+
+ Example Response
+ ```
+ {
+    "short_url":"https://gettrimly.vercel.app/api/W"
+ }
+ ```
+
 ## Database Schema
 
 The application uses PostgreSQL with 4 tables:
