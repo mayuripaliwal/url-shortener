@@ -199,7 +199,7 @@ Creates a shortened URL for a given long URL for an authenticated user.
  Request body
  ```
  {
-    "url":"https://example.com/song/long/path"
+    "url":"https://example.com/some/long/path"
  }
  ```
 
@@ -207,6 +207,33 @@ Creates a shortened URL for a given long URL for an authenticated user.
  ```
  {
     "short_url":"https://gettrimly.vercel.app/api/W"
+ }
+ ```
+
+ ### 2. Redirect to original URL:
+
+Redirect a short URL to its original destination.
+
+ Request
+ ```
+ GET /{short_code}
+ ```
+
+ Example request
+ ```
+ GET/W
+ ```
+
+ Example Response
+ ```
+ HTTP/1.1 307 Temporary Redirect
+ Location: https://example.com/some/long/path
+ ```
+
+ Error Response (404 Not Found)
+ ```
+ {
+    "detail":"Short URL not found"
  }
  ```
 
