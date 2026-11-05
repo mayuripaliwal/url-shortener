@@ -302,6 +302,7 @@ def getAnalytics(short_code:str, user_id=Depends(verify_user),conn=Depends(get_d
 @app.post("/register",
 tags=["Authentication"],
 summary="Register a new user",
+description="Create an account with the provided unique email, username and password."
 )
 def registerUser(request:Request,user: UserRegister,conn=Depends(get_db)):
     rate_limit=5
