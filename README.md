@@ -237,6 +237,36 @@ Redirect a short URL to its original destination.
  }
  ```
 
+ ### 3. Get URL Analytics:
+ 
+ Retrieve URL click count and last clicked at for a given short URL.
+
+ Request
+ ```
+ GET /stats/{short_code}
+ ```
+
+ Example request
+ ```
+ GET /stats/W
+ ```
+
+ Example response
+ ```
+ {
+    "click_count": 1,
+    "created_at": "2026-09-28T11:08:15.513344+00:00",
+    "last_clicked_at": "2026-10-14T13:57:55.472144+00:00",
+    "long_url": "https://www.example.com/some/long/path"
+ }
+```
+
+Note:
+- `last_clicked_at` refers to the last time a click event was recorded for this short URL.
+
+- `click_count` refers to the no. of times this short URL was clicked.
+
+
 ## Database Schema
 
 The application uses PostgreSQL with 4 tables:
