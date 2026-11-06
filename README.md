@@ -178,7 +178,7 @@ I added a cron job that runs every 24 hours to aggregate click events that are o
 | `POST` | `/shorten` | Yes | Create a shortened URL |
 | `GET` | `/{code}` | No | Redirect to the original URL |
 | `GET` | `/stats/{code}` | Yes | Retrieve analytics for a shortened URL |
-| `GET` | `/auth` | Yes | Check is user logged in or not |
+| `GET` | `/auth` | No | Check is user logged in or not |
 | `GET` | `/stats`| Yes | Retrieve all analytics for a given user ID |
 | `GET` | `/clicks/daily` | Yes | Retrieve daily click count across all URLs for past 7 calendar days|
 | `GET` | `/clicks/hourly` | Yes | Retrieve hourly click count across all URLs for past 24 hours|
